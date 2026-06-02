@@ -14,7 +14,7 @@
     <style>
         body {
             margin: 0; padding: 0;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
             background-color: #F0E6FF;
             display: flex; justify-content: center; height: 100vh;
             overflow: hidden;
@@ -75,11 +75,9 @@
         .avatar-option.selected { border-color: #D8BFFF; background-color: #FFDAF0; }
 
         /* ВІКНО ЧАТУ */
-        .screen-chat-window { display: flex; flex-direction: column; height: 100%; background-color: #F7F0FF; }
+        .screen-chat-window { display: flex; flex-direction: column; height: 100%; background-color: #F7F0FF; position: relative; }
         
-        /* Фіксована шапка чату */
         .chat-header { 
-            position: sticky; top: 0; z-index: 100;
             background-color: #FFDAF0; padding: 12px 15px; 
             display: flex; align-items: center; border-bottom: 2px solid #D8BFFF; 
         }
@@ -90,46 +88,50 @@
         .chat-header-status { font-size: 11px; color: #A080D0; font-style: italic; font-weight: bold; height: 14px; }
 
         /* ПАНЕЛЬ ЗАКРІПЛЕНОГО ПОВІДОМЛЕННЯ */
-        .pinned-message-bar { background-color: #FFF0FA; padding: 8px 15px; border-bottom: 2px solid #E6C5FF; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #5D418A; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .pinned-message-bar { background-color: #FFF0FA; padding: 8px 15px; border-bottom: 2px solid #E6C5FF; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #5D418A; }
         .pinned-text { font-weight: bold; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex: 1; cursor: pointer; border-left: 3px solid #D8BFFF; padding-left: 8px; }
         .unpin-btn { background: none; border: none; font-size: 14px; cursor: pointer; color: #9A80B3; font-weight: bold; padding: 2px 6px; }
-        .unpin-btn:hover { color: #FF6B6B; }
         
-        .messages-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        .messages-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
         
-        /* ХМАРИНКИ ПОВІДОМЛЕНЬ */
+        /* ВИПРАВЛЕНІ ХМАРИНКИ ПОВІДОМЛЕНЬ */
         .message-wrapper { display: flex; flex-direction: column; width: 100%; position: relative; }
-        .message-row { display: flex; align-items: center; gap: 8px; width: 100%; position: relative; }
-        .message-wrapper.sent .message-row { justify-content: flex-end; flex-direction: row-reverse; }
-        .message-wrapper.received .message-row { justify-content: flex-start; }
+        .message-wrapper.sent { align-items: flex-end; }
+        .message-wrapper.received { align-items: flex-start; }
 
-        .message { max-width: 75%; padding: 10px 14px; border-radius: 15px; font-size: 13px; line-height: 1.4; word-wrap: break-word; position: relative; }
-        .message.sent { background-color: #E2C6FF; color: #3D216A; border-bottom-right-radius: 2px; border: 1px solid #D8BFFF; }
-        .message.received { background-color: #FFFFFF; color: #5D418A; border-bottom-left-radius: 2px; border: 1px solid #E6D5FF; }
-        .message.sticker { background: none !important; border: none !important; font-size: 50px; padding: 0; }
+        .message-row { display: flex; align-items: center; gap: 8px; max-width: 85%; position: relative; }
+        .message-wrapper.sent .message-row { flex-direction: row; }
+        .message-wrapper.received .message-row { flex-direction: row-reverse; }
 
-        .action-buttons-group { display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; background: rgba(255, 255, 255, 0.9); padding: 2px 6px; border-radius: 10px; border: 1px solid #E6D5FF; }
+        .message { padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-wrap: break-word; position: relative; cursor: pointer; transition: background-color 0.2s; }
+        .message.sent { background-color: #E2C6FF; color: #3D216A; border-bottom-right-radius: 2px; border: 1px solid #D8BFFF; text-align: right; }
+        .message.received { background-color: #FFFFFF; color: #5D418A; border-bottom-left-radius: 2px; border: 1px solid #E6D5FF; text-align: left; }
+        .message.sticker { background: none !important; border: none !important; font-size: 45px; padding: 0; cursor: pointer; }
+
+        /* Спливаючі кнопки дій при наведенні */
+        .action-buttons-group { display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; background: rgba(255, 255, 255, 0.95); padding: 3px 6px; border-radius: 12px; border: 1px solid #D8BFFF; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .message-row:hover .action-buttons-group { opacity: 1; }
         
         .msg-action-btn { font-size: 13px; color: #A080D0; cursor: pointer; background: none; border: none; padding: 4px; display: flex; align-items: center; justify-content: center; }
         .msg-action-btn:hover { color: #5D418A; transform: scale(1.2); }
         
-        .quote-in-message { background-color: rgba(0, 0, 0, 0.05); border-left: 3px solid #5D418A; padding: 4px 8px; font-size: 11px; color: #5D418A; border-radius: 4px; margin-bottom: 6px; font-style: italic; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+        .quote-in-message { background-color: rgba(0, 0, 0, 0.04); border-left: 3px solid #5D418A; padding: 4px 8px; font-size: 11px; color: #5D418A; border-radius: 4px; margin-bottom: 6px; font-style: italic; text-align: left; }
 
-        /* СТИЛІ ДЛЯ РЕАКЦІЙ */
-        .reactions-container { display: flex; gap: 3px; position: absolute; bottom: -12px; background: white; border: 1px solid #D8BFFF; padding: 1px 6px; border-radius: 10px; font-size: 11px; box-shadow: 0px 2px 4px rgba(0,0,0,0.05); z-index: 2; }
+        /* РЕАКЦІЇ */
+        .reactions-container { display: flex; gap: 3px; position: absolute; bottom: -10px; background: white; border: 1px solid #D8BFFF; padding: 1px 6px; border-radius: 10px; font-size: 11px; box-shadow: 0px 2px 4px rgba(0,0,0,0.05); z-index: 2; }
         .message-wrapper.sent .reactions-container { right: 10px; }
         .message-wrapper.received .reactions-container { left: 10px; }
         
-        .reaction-picker { display: flex; gap: 8px; background: white; border: 2px solid #D8BFFF; border-radius: 20px; padding: 5px 10px; position: absolute; top: -35px; z-index: 100; box-shadow: 0px 4px 8px rgba(0,0,0,0.1); }
+        /* Віконце вибору реакцій над повідомленням */
+        .reaction-picker { display: flex; gap: 8px; background: white; border: 2px solid #D8BFFF; border-radius: 20px; padding: 6px 10px; position: absolute; top: -42px; z-index: 110; box-shadow: 0px 4px 12px rgba(0,0,0,0.15); }
         .message-wrapper.sent .reaction-picker { right: 0; }
         .message-wrapper.received .reaction-picker { left: 0; }
-        .picker-emoji { cursor: pointer; transition: transform 0.1s; }
+        .picker-emoji { cursor: pointer; transition: transform 0.1s; font-size: 16px; }
         .picker-emoji:hover { transform: scale(1.3); }
 
-        .message-meta { font-size: 9px; color: #9A80B3; margin-top: 5px; display: flex; gap: 4px; align-items: center; }
-        .message-wrapper.sent .message-meta { align-self: flex-end; margin-right: 5px; }
-        .message-wrapper.received .message-meta { align-self: flex-start; margin-left: 5px; }
+        .message-meta { font-size: 10px; color: #9A80B3; margin-top: 4px; display: flex; gap: 4px; align-items: center; }
+        .message-wrapper.sent .message-meta { justify-content: flex-end; margin-right: 4px; }
+        .message-wrapper.received .message-meta { justify-content: flex-start; margin-left: 4px; }
         .status-ticks { font-weight: bold; color: #9A80B3; font-size: 11px; }
         .status-ticks.read { color: #4CAF50; }
 
@@ -140,14 +142,13 @@
 
         /* ПАНЕЛЬ СТІКЕРІВ */
         .stickers-panel { display: flex; gap: 15px; background: #FFF3FA; padding: 8px 15px; border-top: 2px solid #D8BFFF; font-size: 24px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .sticker-btn { cursor: pointer; transition: transform 0.1s; display: inline-block; }
+        .sticker-btn { cursor: pointer; transition: transform 0.1s; display: inline-block; font-family: "Apple Color Emoji", "Segoe UI Emoji", Arial, sans-serif; }
         .sticker-btn:hover { transform: scale(1.2); }
 
         .chat-input-area { padding: 10px; background-color: #FFFFFF; border-top: 2px solid #D8BFFF; display: flex; gap: 10px; align-items: center; }
         .message-input { flex: 1; padding: 12px; border: 2px solid #D8BFFF; border-radius: 20px; font-family: inherit; font-size: 14px; outline: none; background-color: #FBF7FF; }
         .send-button { width: 45px; height: 45px; border-radius: 50%; background-color: #FFDAF0; border: 2px solid #D8BFFF; color: #5D418A; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0px 2px 0px #D8BFFF; }
         
-        /* Спліш-екран завантаження авторизації */
         .loading-screen { display: flex; width: 100%; height: 100%; background: #F0E6FF; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: #5D418A; position: absolute; top:0; left:0; z-index: 1000; }
     </style>
 </head>
@@ -155,8 +156,10 @@
 
     <div class="app-container">
         
+        <!-- ЕКРАН ЗАВАНТАЖЕННЯ -->
         <div id="loadingScreen" class="loading-screen">Завантаження магії... 🦄</div>
         
+        <!-- РЕЄСТРАЦІЯ ТА ВХІД -->
         <div id="authScreen" class="screen-auth hidden">
             <div class="auth-logo">✨ Magical Social ✨</div>
             <div id="authSubtitle" class="auth-sub">Увійдіть або зареєструйтеся</div>
@@ -176,6 +179,7 @@
             </div>
         </div>
 
+        <!-- СПИСОК ЧАТІВ -->
         <div id="mainScreen" class="screen-main hidden">
             <div class="profile-header">
                 <div id="myAvatarDisplay" class="profile-avatar">🦄</div>
@@ -191,6 +195,7 @@
             <div id="chatsList" class="chats-list"></div>
         </div>
 
+        <!-- МОДАЛКА ПРОФІЛЮ -->
         <div id="profileModal" class="modal-overlay hidden">
             <div class="modal-content">
                 <div class="modal-title" style="font-weight: bold; margin-bottom: 15px; color: #5D418A;">Твій чарівний профіль</div>
@@ -208,6 +213,7 @@
             </div>
         </div>
 
+        <!-- ВІКНО ЧАТУ -->
         <div id="chatWindowScreen" class="screen-chat-window hidden">
             <div class="chat-header">
                 <button id="backToMainBtn" class="back-button">◀</button>
@@ -218,6 +224,7 @@
                 </div>
             </div>
 
+            <!-- Верхня закріплена панель повідомлень -->
             <div id="pinnedMessageBar" class="pinned-message-bar hidden">
                 <div id="pinnedText" class="pinned-text">📌 Закріплено: ...</div>
                 <button id="unpinBtn" class="unpin-btn">✕</button>
@@ -249,6 +256,7 @@
 
     </div>
 
+    <!-- ВЕБ-МОДУЛІ FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -289,11 +297,10 @@
         const replyPreviewBar = document.getElementById('replyPreviewBar'), replyPreviewText = document.getElementById('replyPreviewText'), cancelReplyBtn = document.getElementById('cancelReplyBtn');
         const pinnedMessageBar = document.getElementById('pinnedMessageBar'), pinnedText = document.getElementById('pinnedText'), unpinBtn = document.getElementById('unpinBtn');
 
-        let currentUserEmail = "", selectedEmoji = "🦄", activeFriendEmail = "", unsubscribeFromChat = null, unsubscribeFromTyping = null, unsubscribeFromPinned = null;
+        let currentUserEmail = "", selectedEmoji = "🦄", activeFriendEmail = "", unsubscribeFromChat = null, unsubscribeFromPinned = null;
         let replyToMessageText = null, activeChatId = "";
-        let editingMessageId = null; // Для відстеження повідомлення, яке редагується
+        let editingMessageId = null;
 
-        // Контроль стану авторизації
         onAuthStateChanged(auth, async (user) => {
             loadingScreen.classList.add('hidden');
             if (user) {
@@ -474,7 +481,6 @@
             mainScreen.classList.add('hidden'); chatWindowScreen.classList.remove('hidden');
             
             if (unsubscribeFromChat) unsubscribeFromChat();
-            if (unsubscribeFromTyping) unsubscribeFromTyping();
             if (unsubscribeFromPinned) unsubscribeFromPinned();
 
             markMessagesAsRead();
@@ -489,14 +495,14 @@
                     const isMe = data.sender === currentUserEmail;
                     const timeString = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
                     const isSticker = data.type === "sticker";
-                    const isEdited = data.isEdited ? " <span style='font-style:italic; font-size:9px; color:#9A80B3;'>(ред.)</span>" : "";
+                    const isEdited = data.isEdited ? " <span style='font-style:italic; font-size:10px; color:#9A80B3;'>(ред.)</span>" : "";
                     const quoteHtml = data.replyTo ? `<div class="quote-in-message">↩ Відповідь на: ${data.replyTo}</div>` : "";
 
                     let reactionsHtml = "";
                     if (data.reactions && Object.keys(data.reactions).length > 0) {
                         reactionsHtml = `<div class="reactions-container">`;
                         for (const [emoji, usersArray] of Object.entries(data.reactions)) {
-                            if (usersArray.length > 0) reactionsHtml += `<span>${emoji} ${usersArray.length}</span>`;
+                            if (usersArray && usersArray.length > 0) reactionsHtml += `<span>${emoji} ${usersArray.length}</span>`;
                         }
                         reactionsHtml += `</div>`;
                     }
@@ -506,19 +512,18 @@
                         ticksHtml = data.isRead ? `<span class="status-ticks read">✔✔</span>` : `<span class="status-ticks">✔</span>`;
                     }
 
-                    // Панель дій над повідомленням (цитата, редагування, закріплення)
                     const actionGroupHtml = `
                         <div class="action-buttons-group">
-                            <button class="msg-action-btn" data-id="${mId}" data-action="reply">↩</button>
-                            ${isMe && !isSticker ? `<button class="msg-action-btn" data-id="${mId}" data-action="edit">✏️</button>` : ''}
-                            <button class="msg-action-btn" data-id="${mId}" data-action="pin">📌</button>
+                            <button class="msg-action-btn" data-id="${mId}" data-action="reply" title="Відповісти">↩</button>
+                            ${isMe && !isSticker ? `<button class="msg-action-btn" data-id="${mId}" data-action="edit" title="Редагувати">✏️</button>` : ''}
+                            <button class="msg-action-btn" data-id="${mId}" data-action="pin" title="Закріпити">📌</button>
                         </div>
                     `;
 
                     const msgHtml = `
                         <div class="message-wrapper ${isMe ? 'sent' : 'received'}" id="wrapper-${mId}">
                             <div class="message-row">
-                                <div class="message ${isSticker ? 'sticker' : (isMe ? 'sent' : 'received')}">
+                                <div class="message ${isSticker ? 'sticker' : (isMe ? 'sent' : 'received')}" data-id="${mId}">
                                     ${quoteHtml}
                                     <span>${data.text}</span>${isEdited}
                                     ${reactionsHtml}
@@ -535,29 +540,98 @@
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             });
 
-            // Обробник кліків на іконки всередині повідомлень
-            messagesContainer.onclick = (e) => {
+            // Кліки на кнопки дій у чаті
+            messagesContainer.onclick = async (e) => {
+                // 1. Перевірка натискання на іконки дій (відповідь, редагування, закріплення)
                 const btn = e.target.closest('.msg-action-btn');
-                if (!btn) return;
-                const mId = btn.dataset.id;
-                const action = btn.dataset.action;
-                
-                if (action === 'reply') {
-                    setupReply(mId);
-                } else if (action === 'edit') {
-                    setupEdit(mId);
-                } else if (action === 'pin') {
-                    pinMessage(mId);
+                if (btn) {
+                    const mId = btn.dataset.id;
+                    const action = btn.dataset.action;
+                    if (action === 'reply') setupReply(mId);
+                    if (action === 'edit') setupEdit(mId);
+                    if (action === 'pin') pinMessage(mId);
+                    return;
+                }
+
+                // 2. Перевірка кліку на саме повідомлення — ВІДКРИТТЯ РЕАКЦІЙ
+                const messageBubble = e.target.closest('.message');
+                if (messageBubble) {
+                    const mId = messageBubble.dataset.id;
+                    if (!mId) return;
+                    
+                    // Видаляємо старе вікно вибору реакцій, якщо воно відкрите десь
+                    const oldPicker = document.querySelector('.reaction-picker');
+                    if (oldPicker) oldPicker.remove();
+
+                    // Створюємо нову плашку вибору емодзі
+                    const pickerHtml = `
+                        <div class="reaction-picker">
+                            <span class="picker-emoji" data-emoji="❤️">❤️</span>
+                            <span class="picker-emoji" data-emoji="✨">✨</span>
+                            <span class="picker-emoji" data-emoji="😂">😂</span>
+                            <span class="picker-emoji" data-emoji="😮">😮</span>
+                            <span class="picker-emoji" data-emoji="👍">👍</span>
+                        </div>
+                    `;
+                    messageBubble.parentElement.insertAdjacentHTML('beforeend', pickerHtml);
+
+                    // Додаємо обробник кліків на емодзі всередині плашки
+                    const picker = messageBubble.parentElement.querySelector('.reaction-picker');
+                    picker.onclick = async (pe) => {
+                        const emojiSpan = pe.target.closest('.picker-emoji');
+                        if (!emojiSpan) return;
+                        const emoji = emojiSpan.dataset.emoji;
+                        
+                        await toggleReaction(mId, emoji);
+                        picker.remove(); // Закриваємо вибір після кліку
+                    };
+
+                    // Закриваємо плашку, якщо клікнули в іншому місці чату
+                    setTimeout(() => {
+                        const closePicker = (event) => {
+                            if (!picker.contains(event.target)) {
+                                picker.remove();
+                                document.removeEventListener('click', closePicker);
+                            }
+                        };
+                        document.addEventListener('click', closePicker);
+                    }, 50);
                 }
             };
         }
 
-        // Слухач для закріпленого повідомлення
+        // Функція для додавання/видалення реакції
+        async function toggleReaction(messageId, emoji) {
+            const msgRef = doc(db, "chats", activeChatId, "messages", messageId);
+            const msgSnap = await getDoc(msgRef);
+            if (!msgSnap.exists()) return;
+
+            const data = msgSnap.data();
+            let reactions = data.reactions || {};
+            let usersWhoReacted = reactions[emoji] || [];
+
+            if (usersWhoReacted.includes(currentUserEmail)) {
+                // Якщо вже ставили цю реакцію — видаляємо її
+                usersWhoReacted = usersWhoReacted.filter(email => email !== currentUserEmail);
+            } else {
+                // Якщо ще не ставили — додаємо
+                usersWhoReacted.push(currentUserEmail);
+            }
+
+            if (usersWhoReacted.length === 0) {
+                delete reactions[emoji];
+            } else {
+                reactions[emoji] = usersWhoReacted;
+            }
+
+            await updateDoc(msgRef, { reactions: reactions });
+        }
+
         function listenToPinnedMessage() {
             unsubscribeFromPinned = onSnapshot(doc(db, "chats", activeChatId), (docSnap) => {
                 if (docSnap.exists() && docSnap.data().pinnedMessage) {
                     const pinnedData = docSnap.data().pinnedMessage;
-                    pinnedText.innerText = `📌 ${pinnedData.text}`;
+                    pinnedText.innerText = `📌 Закріплено: ${pinnedData.text}`;
                     pinnedText.dataset.targetId = pinnedData.id;
                     pinnedMessageBar.classList.remove('hidden');
                 } else {
@@ -566,44 +640,36 @@
             });
         }
 
-        // Функція закріплення
         async function pinMessage(mId) {
             const msgDoc = await getDoc(doc(db, "chats", activeChatId, "messages", mId));
             if (msgDoc.exists()) {
                 await setDoc(doc(db, "chats", activeChatId), {
-                    pinnedMessage: {
-                        id: mId,
-                        text: msgDoc.data().text
-                    }
+                    pinnedMessage: { id: mId, text: msgDoc.data().text }
                 }, { merge: true });
             }
         }
 
-        // Відкріплення повідомлення
         unpinBtn.onclick = async () => {
             await setDoc(doc(db, "chats", activeChatId), { pinnedMessage: null }, { merge: true });
         };
 
-        // Клік на закріплену плашку прокручує чат до повідомлення
         pinnedText.onclick = () => {
             const tId = pinnedText.dataset.targetId;
             const targetEl = document.getElementById(`wrapper-${tId}`);
             if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth' });
         };
 
-        // Налаштування відповіді (цитати)
         async function setupReply(mId) {
             const msgDoc = await getDoc(doc(db, "chats", activeChatId, "messages", mId));
             if (msgDoc.exists()) {
                 replyToMessageText = msgDoc.data().text;
                 replyPreviewText.innerText = `Відповідь на: ${replyToMessageText}`;
                 replyPreviewBar.classList.remove('hidden');
-                cancelEditMode(); // Вимикаємо редагування, якщо було активоване
+                cancelEditMode();
                 messageInput.focus();
             }
         }
 
-        // Налаштування режиму редагування
         async function setupEdit(mId) {
             const msgDoc = await getDoc(doc(db, "chats", activeChatId, "messages", mId));
             if (msgDoc.exists()) {
@@ -611,8 +677,8 @@
                 messageInput.value = msgDoc.data().text;
                 replyPreviewText.innerText = `Редагування: ${msgDoc.data().text}`;
                 replyPreviewBar.classList.remove('hidden');
-                sendMessageBtn.innerText = "✓"; // Міняємо іконку на галочку
-                replyToMessageText = null; // Скидаємо цитування
+                sendMessageBtn.innerText = "✓";
+                replyToMessageText = null;
                 messageInput.focus();
             }
         }
@@ -629,19 +695,16 @@
             cancelEditMode();
         };
 
-        // Відправка повідомлення (або збереження редагованого)
         async function handleSendMessage(text, type = "text") {
-            if (!text.disabled && !text.trim()) return;
+            if (!text.trim()) return;
 
             if (editingMessageId) {
-                // Якщо ми в режимі редагування — оновлюємо існуюче повідомлення
                 await updateDoc(doc(db, "chats", activeChatId, "messages", editingMessageId), {
                     text: text.trim(),
                     isEdited: true
                 });
                 cancelEditMode();
             } else {
-                // Звичайна відправка нового повідомлення
                 const msgData = {
                     text: text.trim(),
                     sender: currentUserEmail,
@@ -649,9 +712,7 @@
                     type: type,
                     isRead: false
                 };
-                if (replyToMessageText) {
-                    msgData.replyTo = replyToMessageText;
-                }
+                if (replyToMessageText) msgData.replyTo = replyToMessageText;
                 await addDoc(collection(db, "chats", activeChatId, "messages"), msgData);
                 
                 replyToMessageText = null;
@@ -659,16 +720,12 @@
                 messageInput.value = "";
             }
 
-            // МАГІЧНИЙ ФІКС: повертаємо фокус, щоб клавіатура смартфона не закривалася!
-            setTimeout(() => {
-                messageInput.focus();
-            }, 50);
+            setTimeout(() => { messageInput.focus(); }, 50);
         }
 
         sendMessageBtn.onclick = () => handleSendMessage(messageInput.value);
         messageInput.onkeypress = (e) => { if (e.key === 'Enter') handleSendMessage(messageInput.value); };
 
-        // Обробник натискання на швидкі стікери-емодзі
         document.querySelectorAll('.sticker-btn').forEach(btn => {
             btn.onclick = () => {
                 const sticker = btn.dataset.sticker;
