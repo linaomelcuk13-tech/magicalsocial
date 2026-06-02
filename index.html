@@ -74,14 +74,14 @@
         .avatar-option { cursor: pointer; padding: 5px; border-radius: 50%; border: 2px solid transparent; }
         .avatar-option.selected { border-color: #D8BFFF; background-color: #FFDAF0; }
 
-        /* ВІКНО ЧАТУ (ЗАЛІЗОБЕТОННА ШАПКА) */
+        /* ВІКНО ЧАТУ (ЗАЛІЗОБЕТОННА ФІКСАЦІЯ) */
         .screen-chat-window { display: flex; flex-direction: column; height: 100%; background-color: #F7F0FF; position: relative; overflow: hidden; }
         
         .chat-header { 
-            position: absolute; top: 0; left: 0; width: 100%;
+            position: fixed; top: 0; left: 0; right: 0; width: 100%; max-width: 450px; margin: 0 auto;
             background-color: #FFDAF0; padding: 12px 15px; 
             display: flex; align-items: center; border-bottom: 2px solid #D8BFFF; 
-            box-sizing: border-box; z-index: 150; /* Завжди поверх усього при будь-яких зрушеннях */
+            box-sizing: border-box; z-index: 190; 
         }
         .back-button { background: none; border: none; font-size: 20px; color: #5D418A; cursor: pointer; margin-right: 15px; font-weight: bold; padding: 5px; }
         .chat-header-avatar { width: 38px; height: 38px; border-radius: 50%; background: white; border: 2px solid #D8BFFF; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-right: 10px; }
@@ -89,20 +89,20 @@
         .chat-header-title { font-size: 15px; font-weight: bold; color: #5D418A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chat-header-status { font-size: 11px; color: #A080D0; font-style: italic; font-weight: bold; height: 14px; }
 
-        /* ПАНЕЛЬ ЗАКРІПЛЕНОГО ПОВІДОМЛЕННЯ - тепер теж абсолютна під шапкою */
+        /* ПАНЕЛЬ ЗАКРІПЛЕНОГО ПОВІДОМЛЕННЯ */
         .pinned-message-bar { 
-            position: absolute; top: 64px; left: 0; width: 100%;
+            position: fixed; top: 64px; left: 0; right: 0; width: 100%; max-width: 450px; margin: 0 auto;
             background-color: #FFF0FA; padding: 8px 15px; border-bottom: 2px solid #E6C5FF; 
             display: flex; align-items: center; justify-content: space-between; 
-            font-size: 12px; color: #5D418A; box-sizing: border-box; z-index: 140; 
+            font-size: 12px; color: #5D418A; box-sizing: border-box; z-index: 180; 
         }
         .pinned-text { font-weight: bold; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex: 1; cursor: pointer; border-left: 3px solid #D8BFFF; padding-left: 8px; }
         .unpin-btn { background: none; border: none; font-size: 14px; cursor: pointer; color: #9A80B3; font-weight: bold; padding: 2px 6px; }
         
-        /* СТРУКТУРА КОНТЕЙНЕРА ПОВІДОМЛЕНЬ (Враховує висоту фіксованої шапки) */
+        /* СТРУКТУРА КОНТЕЙНЕРА ПОВІДОМЛЕНЬ */
         .messages-container { 
             flex: 1; overflow-y: auto; 
-            padding: 110px 15px 15px 15px; /* Великий відступ зверху, щоб повідомлення не залазили під закріплені бари */
+            padding: 120px 15px 15px 15px; 
             display: flex; flex-direction: column; gap: 14px; width: 100%; box-sizing: border-box; 
         }
         
@@ -158,7 +158,7 @@
             border-top: 2px solid #D8BFFF; position: relative;
         }
 
-        /* ПРЕВ'Ю ЦИТАТИ ТА РЕДАГУВАННЯ (Тепер вилітає ЗВЕРХУ контролів і має високий z-index) */
+        /* ПРЕВ'Ю ЦИТАТИ ТА РЕДАГУВАННЯ */
         .reply-preview-bar { 
             background-color: #FFF3FA; padding: 8px 15px; border-bottom: 2px solid #D8BFFF; 
             display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #5D418A;
@@ -242,7 +242,7 @@
 
         <!-- ВІКНО ЧАТУ -->
         <div id="chatWindowScreen" class="screen-chat-window hidden">
-            <!-- Верхня шапка (Абсолютна фіксація) -->
+            <!-- Верхня шапка -->
             <div class="chat-header">
                 <button id="backToMainBtn" class="back-button">◀</button>
                 <div id="chatHeaderAvatar" class="chat-header-avatar">🦄</div>
@@ -261,7 +261,7 @@
             <!-- Контейнер для повідомлень -->
             <div id="messagesContainer" class="messages-container"></div>
 
-            <!-- Нижня зона управління (включає прев'ю та введення) -->
+            <!-- Нижня зона управління -->
             <div class="bottom-controls-wrapper">
                 <div id="replyPreviewBar" class="reply-preview-bar hidden">
                     <div id="replyPreviewText" class="reply-preview-text">Відповідь на: ...</div>
@@ -663,7 +663,7 @@
                     pinnedText.innerText = `📌 Закріплено: ${pinnedData.text}`;
                     pinnedText.dataset.targetId = pinnedData.id;
                     pinnedMessageBar.classList.remove('hidden');
-                    messagesContainer.style.paddingTop = "110px";
+                    messagesContainer.style.paddingTop = "120px";
                 } else {
                     pinnedMessageBar.classList.add('hidden');
                     messagesContainer.style.paddingTop = "75px";
