@@ -78,10 +78,10 @@
         .screen-chat-window { display: flex; flex-direction: column; height: 100%; background-color: #F7F0FF; position: relative; overflow: hidden; }
         
         .chat-header { 
-            position: fixed; top: 0; left: 0; right: 0; width: 100%; max-width: 450px; margin: 0 auto;
+            position: absolute; top: 0; left: 0; right: 0; width: 100%; max-width: 450px; margin: 0 auto;
             background-color: #FFDAF0; padding: 12px 15px; 
             display: flex; align-items: center; border-bottom: 2px solid #D8BFFF; 
-            box-sizing: border-box; z-index: 190; 
+            box-sizing: border-box; z-index: 999; /* Найвищий пріоритет */
         }
         .back-button { background: none; border: none; font-size: 20px; color: #5D418A; cursor: pointer; margin-right: 15px; font-weight: bold; padding: 5px; }
         .chat-header-avatar { width: 38px; height: 38px; border-radius: 50%; background: white; border: 2px solid #D8BFFF; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-right: 10px; }
@@ -91,10 +91,10 @@
 
         /* ПАНЕЛЬ ЗАКРІПЛЕНОГО ПОВІДОМЛЕННЯ */
         .pinned-message-bar { 
-            position: fixed; top: 64px; left: 0; right: 0; width: 100%; max-width: 450px; margin: 0 auto;
+            position: absolute; top: 64px; left: 0; right: 0; width: 100%; max-width: 450px; margin: 0 auto;
             background-color: #FFF0FA; padding: 8px 15px; border-bottom: 2px solid #E6C5FF; 
             display: flex; align-items: center; justify-content: space-between; 
-            font-size: 12px; color: #5D418A; box-sizing: border-box; z-index: 180; 
+            font-size: 12px; color: #5D418A; box-sizing: border-box; z-index: 998; 
         }
         .pinned-text { font-weight: bold; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex: 1; cursor: pointer; border-left: 3px solid #D8BFFF; padding-left: 8px; }
         .unpin-btn { background: none; border: none; font-size: 14px; cursor: pointer; color: #9A80B3; font-weight: bold; padding: 2px 6px; }
@@ -243,7 +243,7 @@
         <!-- ВІКНО ЧАТУ -->
         <div id="chatWindowScreen" class="screen-chat-window hidden">
             <!-- Верхня шапка -->
-            <div class="chat-header">
+            <div class="chat-header" id="chatHeaderContainer">
                 <button id="backToMainBtn" class="back-button">◀</button>
                 <div id="chatHeaderAvatar" class="chat-header-avatar">🦄</div>
                 <div class="chat-header-info">
@@ -253,7 +253,7 @@
             </div>
 
             <!-- Верхня закріплена панель повідомлень -->
-            <div id="pinnedMessageBar" class="pinned-message-bar hidden">
+            <div id="pinnedMessageBar" class="pinned-message-bar">
                 <div id="pinnedText" class="pinned-text">📌 Закріплено: ...</div>
                 <button id="unpinBtn" class="unpin-btn">✕</button>
             </div>
@@ -323,14 +323,28 @@
         const myAvatarDisplay = document.getElementById('myAvatarDisplay'), myNameDisplay = document.getElementById('myNameDisplay'), userEmailDisplay = document.getElementById('userEmailDisplay');
         const editProfileBtn = document.getElementById('editProfileBtn'), editNameInput = document.getElementById('editNameInput'), saveProfileBtn = document.getElementById('saveProfileBtn');
         const searchInput = document.getElementById('searchInput'), chatsList = document.getElementById('chatsList');
-        const chatWithTitle = document.getElementById('chatWithTitle'), chatHeaderAvatar = document.getElementById('chatHeaderAvatar'), chatHeaderStatus = document.getElementById('chatHeaderStatus'), backToMainBtn = document.getElementById('backToMainBtn');
+        const chatWithTitle = document.getElementById('chatWithTitle'), chatHeaderAvatar = document.getElementById('chatHeaderAvatar'), chatHeaderStatus = document.getElementById('chatHeaderStatus'), backToMainBtn = document.getElementById('backToMainBtn'), chatHeaderContainer = document.getElementById('chatHeaderContainer');
         const messageInput = document.getElementById('messageInput'), sendMessageBtn = document.getElementById('sendMessageBtn'), messagesContainer = document.getElementById('messagesContainer');
         const replyPreviewBar = document.getElementById('replyPreviewBar'), replyPreviewText = document.getElementById('replyPreviewText'), cancelReplyBtn = document.getElementById('cancelReplyBtn');
         const pinnedMessageBar = document.getElementById('pinnedMessageBar'), pinnedText = document.getElementById('pinnedText'), unpinBtn = document.getElementById('unpinBtn');
 
-        let currentUserEmail = "", selectedEmoji = "🦄", activeFriendEmail = "", unsubscribeFromChat = null, unsubscribeFromPinned = null;
+        let currentUserEmail = "", selectedEmoji = "🦄", activeFriendEmail = "", unsubscribeFromChat = null, unsubscribeFromPinned = null, unsubscribeFromStatus = null;
         let replyToMessageText = null, activeChatId = "";
         let editingMessageId = null;
+        let typingTimeout = null;
+
+        // ЗАЛІЗОБЕТОННА ПРИБИВКА ШАПКИ ДЛЯ МОБІЛОК (Зчитування Visual Viewport)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', updateHeaderPosition);
+            window.visualViewport.addEventListener('scroll', updateHeaderPosition);
+        }
+        function updateHeaderPosition() {
+            if (!chatWindowScreen.classList.contains('hidden') && window.visualViewport) {
+                const offsetTop = window.visualViewport.offsetTop;
+                chatHeaderContainer.style.top = offsetTop + 'px';
+                pinnedMessageBar.style.top = (offsetTop + 64) + 'px';
+            }
+        }
 
         onAuthStateChanged(auth, async (user) => {
             loadingScreen.classList.add('hidden');
@@ -345,7 +359,7 @@
                     myAvatarDisplay.innerText = userDoc.data().avatar;
                     selectedEmoji = userDoc.data().avatar;
                 } else {
-                    await setDoc(doc(db, "users", myKey), { name: "Новий Маг", avatar: "🦄", isOnline: true, lastActive: Date.now() });
+                    await setDoc(doc(db, "users", myKey), { name: "Новий Маг", avatar: "🦄", isOnline: true, lastActive: Date.now(), isTypingIn: "" });
                 }
                 
                 setUserOnlineStatus(true);
@@ -371,6 +385,23 @@
         }
 
         document.addEventListener('visibilitychange', () => { setUserOnlineStatus(document.visibilityState === 'visible'); });
+
+        // ВІДСТЕЖЕННЯ СТАТУСУ НАБОРУ ТЕКСТУ ("пише...")
+        messageInput.addEventListener('input', () => {
+            if (!activeChatId) return;
+            setMyTypingStatus(activeChatId);
+            
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                setMyTypingStatus("");
+            }, 2000);
+        });
+
+        async function setMyTypingStatus(chatId) {
+            if (!currentUserEmail) return;
+            const myKey = currentUserEmail.replace(/[@.]/g, '_');
+            await setDoc(doc(db, "users", myKey), { isTypingIn: chatId }, { merge: true });
+        }
 
         signUpBtn.addEventListener('click', () => {
             const email = emailInput.value.trim().toLowerCase(), password = passwordInput.value;
@@ -452,7 +483,9 @@
                             const statusText = document.getElementById(`status-text-${fKey}`);
                             const isRecentlyActive = data.lastActive && (Date.now() - data.lastActive < 60000);
 
-                            if (data.isOnline && isRecentlyActive) {
+                            if (data.isTypingIn === chatId) {
+                                statusText.innerText = "пише..."; statusText.style.color = "#FF6B6B";
+                            } else if (data.isOnline && isRecentlyActive) {
                                 dot.classList.add('active'); statusText.innerText = "в мережі 🟢"; statusText.style.color = "#4CAF50";
                             } else {
                                 dot.classList.remove('active'); statusText.innerText = "не в мережі ⚪"; statusText.style.color = "#9A80B3";
@@ -508,11 +541,34 @@
             chatHeaderAvatar.innerText = avatar;
             mainScreen.classList.add('hidden'); chatWindowScreen.classList.remove('hidden');
             
+            setTimeout(updateHeaderPosition, 100);
+
             if (unsubscribeFromChat) unsubscribeFromChat();
             if (unsubscribeFromPinned) unsubscribeFromPinned();
+            if (unsubscribeFromStatus) unsubscribeFromStatus();
 
             markMessagesAsRead();
             listenToPinnedMessage();
+
+            // Динамічний контроль статусу у шапці чату ("пише..." або стан активності)
+            const fKey = activeFriendEmail.replace(/[@.]/g, '_');
+            unsubscribeFromStatus = onSnapshot(doc(db, "users", fKey), (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const isRecentlyActive = data.lastActive && (Date.now() - data.lastActive < 60000);
+                    
+                    if (data.isTypingIn === activeChatId) {
+                        chatHeaderStatus.innerText = "пише...";
+                        chatHeaderStatus.style.color = "#FF6B6B";
+                    } else if (data.isOnline && isRecentlyActive) {
+                        chatHeaderStatus.innerText = "в мережі 🟢";
+                        chatHeaderStatus.style.color = "#4CAF50";
+                    } else {
+                        chatHeaderStatus.innerText = "не в мережі ⚪";
+                        chatHeaderStatus.style.color = "#9A80B3";
+                    }
+                }
+            });
 
             const q = query(collection(db, "chats", activeChatId, "messages"), orderBy("timestamp", "asc"));
             unsubscribeFromChat = onSnapshot(q, (snapshot) => {
@@ -668,6 +724,7 @@
                     pinnedMessageBar.classList.add('hidden');
                     messagesContainer.style.paddingTop = "75px";
                 }
+                updateHeaderPosition();
             });
         }
 
@@ -730,6 +787,8 @@
         async function handleSendMessage(text, type = "text") {
             if (!text.trim()) return;
 
+            setMyTypingStatus(""); // Скидаємо статус "пише..." відразу після відправки
+
             if (editingMessageId) {
                 await updateDoc(doc(db, "chats", activeChatId, "messages", editingMessageId), {
                     text: text.trim(),
@@ -769,10 +828,12 @@
         });
 
         backToMainBtn.onclick = () => {
+            setMyTypingStatus("");
             mainScreen.classList.remove('hidden'); chatWindowScreen.classList.add('hidden');
             activeChatId = ""; activeFriendEmail = "";
             if (unsubscribeFromChat) unsubscribeFromChat();
             if (unsubscribeFromPinned) unsubscribeFromPinned();
+            if (unsubscribeFromStatus) unsubscribeFromStatus();
         };
     </script>
 </body>
