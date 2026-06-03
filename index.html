@@ -283,7 +283,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, addDoc, updateDoc, query, orderBy, onSnapshot, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCtqNAADT2KXQG2k3T1X3YRCK7peOxFhTE",
@@ -315,6 +315,16 @@
         let currentUserEmail = "", selectedEmoji = "🦄", activeFriendEmail = "", unsubscribeFromChat = null, unsubscribeFromPinned = null, unsubscribeFromStatus = null;
         let replyToMessageText = null, activeChatId = "";
         let editingMessageId = null, typingTimeout = null, myCurrentName = "Новий Маг";
+
+        // РЕЄСТРАЦІЯ SERVICE WORKER ДЛЯ ФОНОВИХ ПУШІВ
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/firebase-messaging-sw.js')
+            .then((registration) => {
+                console.log('Чарівний Сервіс-Воркер успішно активований:', registration.scope);
+            }).catch((err) => {
+                console.log('Помилка активації Сервіс-Воркера:', err);
+            });
+        }
 
         onAuthStateChanged(auth, async (user) => {
             loadingScreen.classList.add('hidden');
@@ -357,6 +367,18 @@
                 }
             });
         }
+
+        // ПРИЙОМ СПОВІЩЕНЬ, КОЛИ ДОДАТОК ВІДКРИТИЙ (ЩОБ НЕ БЛОКУВАЛИСЬ)
+        onMessage(messaging, (payload) => {
+            console.log('Отримано пуш у відкритому додатку: ', payload);
+            if (activeChatId === "") {
+                // Показуємо банер, якщо користувач сидить на головному екрані списку чатів
+                new Notification(payload.notification.title, {
+                    body: payload.notification.body,
+                    icon: "data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%270.9em%27 font-size=%2790%27>🦄</text></svg>"
+                });
+            }
+        });
 
         async function setUserOnlineStatus(isOnline) {
             if (!currentUserEmail) return;
@@ -697,7 +719,7 @@
         function cancelEditMode() { editingMessageId = null; sendMessageBtn.innerText = "➔"; replyPreviewBar.classList.add('hidden'); messageInput.value = ""; }
         cancelReplyBtn.onclick = () => { replyToMessageText = null; cancelEditMode(); };
 
-        // НОВА АВТОМАТИЗОВАНА СИСТЕМА ПУШІВ ЧЕРЕЗ FIRESTORE TRIGGERS
+        // АВТОМАТИЗОВАНА СИСТЕМА ПУШІВ ЧЕРЕЗ FIRESTORE
         async function sendPushNotificationToFriend(friendEmail, messageText) {
             const friendKey = friendEmail.replace(/[@.]/g, '_');
             const friendDoc = await getDoc(doc(db, "users", friendKey));
@@ -705,13 +727,10 @@
             if (friendDoc.exists() && friendDoc.data().pushToken) {
                 const token = friendDoc.data().pushToken;
                 
-                // Записуємо запит на пуш у спеціальну чарівну чергу в базі
-                // Firebase Cloud Functions підхопить її автоматично та доставить без застарілих HTTP-ключів!
                 await addDoc(collection(db, "magic_notifications"), {
                     toToken: token,
                     title: `${myCurrentName} надіслала повідомлення! 🦄`,
                     body: messageText,
-                    badge: "https://upload.wikimedia.org/wikipedia/commons/7/70/Emoji_u1f984.svg",
                     createdAt: Date.now()
                 });
             }
@@ -729,7 +748,6 @@
                 if (replyToMessageText) msgData.replyTo = replyToMessageText;
                 await addDoc(collection(db, "chats", activeChatId, "messages"), msgData);
                 
-                // Запускаємо оновлений пуш!
                 sendPushNotificationToFriend(activeFriendEmail, type === "sticker" ? "Надіслала тобі стікер " + text : text);
                 
                 replyToMessageText = null; replyPreviewBar.classList.add('hidden'); messageInput.value = "";
