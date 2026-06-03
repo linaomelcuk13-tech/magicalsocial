@@ -318,7 +318,7 @@
 
         // РЕЄСТРАЦІЯ SERVICE WORKER ДЛЯ ФОНОВИХ ПУШІВ
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/firebase-messaging-sw.js')
+            navigator.serviceWorker.register('/magicalsocial/firebase-messaging-sw.js', { scope: '/magicalsocial/' })
             .then((registration) => {
                 console.log('Чарівний Сервіс-Воркер успішно активований:', registration.scope);
             }).catch((err) => {
@@ -354,7 +354,7 @@
             }
         });
 
-        function requestPushPermission() {
+        async function requestPushPermission() {
             // Перевіряємо, чи взагалі підтримуються сповіщення
             if (!('Notification' in window)) {
                 alert("Помилка: Цей браузер або режим взагалі не підтримує сповіщення!");
@@ -369,7 +369,7 @@
                 if (permission === 'granted') {
                     alert("Діагностика: Дозвіл є! Намагаюся отримати токен від Firebase...");
                     
-                    getToken(messaging, { vapidKey: myVapidKey }).then((currentToken) => {
+                    getToken(messaging, { vapidKey: myVapidKey, serviceWorkerRegistration: await navigator.serviceWorker.ready }).then((currentToken) => {
                         if (currentToken) {
                             const myKey = currentUserEmail.replace(/[@.]/g, '_');
                             setDoc(doc(db, "users", myKey), { pushToken: currentToken }, { merge: true });
