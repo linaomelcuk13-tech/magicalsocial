@@ -355,16 +355,37 @@
         });
 
         function requestPushPermission() {
+            // Перевіряємо, чи взагалі підтримуються сповіщення
+            if (!('Notification' in window)) {
+                alert("Помилка: Цей браузер або режим взагалі не підтримує сповіщення!");
+                return;
+            }
+
+            alert("Діагностика: Запускаю запит дозволу...");
+            
             Notification.requestPermission().then((permission) => {
+                alert("Діагностика: Статус дозволу від браузера = " + permission);
+                
                 if (permission === 'granted') {
+                    alert("Діагностика: Дозвіл є! Намагаюся отримати токен від Firebase...");
+                    
                     getToken(messaging, { vapidKey: myVapidKey }).then((currentToken) => {
                         if (currentToken) {
                             const myKey = currentUserEmail.replace(/[@.]/g, '_');
                             setDoc(doc(db, "users", myKey), { pushToken: currentToken }, { merge: true });
-                            console.log("Токен сповіщень успішно прив'язано!");
+                            alert("УРА! Токен успішно отримано і записано в базу!");
+                        } else {
+                            alert("Помилка: Firebase не повернув токен. Перевір правильність VAPID ключа!");
                         }
-                    }).catch((err) => { console.log('Не вдалося отримати токен: ', err); });
+                    }).catch((err) => { 
+                        alert('Критична помилка Firebase: ' + err.message); 
+                        console.log(err);
+                    });
+                } else {
+                    alert("Попередження: Дозвіл НЕ надано. Пуші заблоковані в налаштуваннях телефону!");
                 }
+            }).catch((err) => {
+                alert("Помилка запиту дозволу: " + err.message);
             });
         }
 
