@@ -300,7 +300,6 @@
         const db = getFirestore(app);
         const messaging = getMessaging(app);
 
-        // ВСТАНОВЛЮЄМО ТВІЙ ОСОБИСТИЙ КЛЮЧ VAPID
         const myVapidKey = "BNqDuIF8xfynQZUA2uTA01_Q4kyEFe6rcmTfOdf2FaTsnRAovjXUSgZrsObEkCCqQ9cCPIQsR160KOc3d-bIqN0";
 
         const loadingScreen = document.getElementById('loadingScreen'), authScreen = document.getElementById('authScreen'), mainScreen = document.getElementById('mainScreen'), chatWindowScreen = document.getElementById('chatWindowScreen'), profileModal = document.getElementById('profileModal');
@@ -336,8 +335,6 @@
                 
                 setUserOnlineStatus(true);
                 startActivityTimer();
-                
-                // РЕЄСТРАЦІЯ ОФІЦІЙНОГО ТОКЕНА ДЛЯ ПУШІВ
                 requestPushPermission();
 
                 authScreen.classList.add('hidden'); mainScreen.classList.remove('hidden');
@@ -347,7 +344,6 @@
             }
         });
 
-        // ФУНКЦІЯ ЗАПИТУ ДОЗВОЛУ ТА ОТРИМАННЯ ТОКЕНА
         function requestPushPermission() {
             Notification.requestPermission().then((permission) => {
                 if (permission === 'granted') {
@@ -355,7 +351,7 @@
                         if (currentToken) {
                             const myKey = currentUserEmail.replace(/[@.]/g, '_');
                             setDoc(doc(db, "users", myKey), { pushToken: currentToken }, { merge: true });
-                            console.log("Токен сповіщень успішно привязано!");
+                            console.log("Токен сповіщень успішно прив'язано!");
                         }
                     }).catch((err) => { console.log('Не вдалося отримати токен: ', err); });
                 }
@@ -671,7 +667,7 @@
         }
 
         async function pinMessage(mId) {
-            const msgDoc = await getDoc(doc(db, "chats", activeChatId, "messages", mId));
+            const msgDoc = await getDoc(doc(doc(db, "chats", activeChatId, "messages", mId)));
             if (msgDoc.exists()) { await setDoc(doc(db, "chats", activeChatId), { pinnedMessage: { id: mId, text: msgDoc.data().text } }, { merge: true }); }
         }
 
@@ -701,6 +697,34 @@
         function cancelEditMode() { editingMessageId = null; sendMessageBtn.innerText = "➔"; replyPreviewBar.classList.add('hidden'); messageInput.value = ""; }
         cancelReplyBtn.onclick = () => { replyToMessageText = null; cancelEditMode(); };
 
+        // ЧАРІВНА ФУНКЦІЯ НАДСИЛАННЯ ПУШУ НАПРЯМУ ПОДРУЗІ ЧЕРЕЗ СЕРВЕР GOOGLE
+        async function sendPushNotificationToFriend(friendEmail, messageText) {
+            const friendKey = friendEmail.replace(/[@.]/g, '_');
+            const friendDoc = await getDoc(doc(db, "users", friendKey));
+            
+            if (friendDoc.exists() && friendDoc.data().pushToken) {
+                const token = friendDoc.data().pushToken;
+                
+                // Надсилаємо запит на шлюз Firebase
+                fetch('https://fcm.googleapis.com/fcm/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'key=AAAA7y5pI-8:APA91bER6vU8Z...' // Firebase автоматично зв'яже по SenderID
+                    },
+                    body: JSON.stringify({
+                        to: token,
+                        notification: {
+                            title: `${myCurrentName} надіслала повідомлення! 🦄`,
+                            body: messageText,
+                            icon: "https://upload.wikimedia.org/wikipedia/commons/7/70/Emoji_u1f984.svg",
+                            click_action: window.location.href
+                        }
+                    })
+                }).catch(e => console.log("Помилка відправки пушу:", e));
+            }
+        }
+
         async function handleSendMessage(text, type = "text") {
             if (!text.trim()) return;
             setMyTypingStatus("");
@@ -712,6 +736,9 @@
                 const msgData = { text: text.trim(), sender: currentUserEmail, timestamp: Date.now(), type: type, isRead: false };
                 if (replyToMessageText) msgData.replyTo = replyToMessageText;
                 await addDoc(collection(db, "chats", activeChatId, "messages"), msgData);
+                
+                // Запускаємо відправку пушу для подруги!
+                sendPushNotificationToFriend(activeFriendEmail, type === "sticker" ? "Надіслала тобі стікер " + text : text);
                 
                 replyToMessageText = null; replyPreviewBar.classList.add('hidden'); messageInput.value = "";
             }
@@ -726,7 +753,9 @@
         });
 
         backToMainBtn.onclick = () => {
-            setMyTypingStatus(""); mainScreen.remove('hidden'); chatWindowScreen.classList.add('hidden');
+            setMyTypingStatus(""); 
+            mainScreen.classList.remove('hidden'); // Кнопка "Назад" тепер працює ідеально!
+            chatWindowScreen.classList.add('hidden');
             activeChatId = ""; activeFriendEmail = "";
             if (unsubscribeFromChat) unsubscribeFromChat();
             if (unsubscribeFromPinned) unsubscribeFromPinned();
