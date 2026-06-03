@@ -697,7 +697,7 @@
         function cancelEditMode() { editingMessageId = null; sendMessageBtn.innerText = "➔"; replyPreviewBar.classList.add('hidden'); messageInput.value = ""; }
         cancelReplyBtn.onclick = () => { replyToMessageText = null; cancelEditMode(); };
 
-        // ЧАРІВНА ФУНКЦІЯ НАДСИЛАННЯ ПУШУ НАПРЯМУ ПОДРУЗІ ЧЕРЕЗ СЕРВЕР GOOGLE
+        // НОВА АВТОМАТИЗОВАНА СИСТЕМА ПУШІВ ЧЕРЕЗ FIRESTORE TRIGGERS
         async function sendPushNotificationToFriend(friendEmail, messageText) {
             const friendKey = friendEmail.replace(/[@.]/g, '_');
             const friendDoc = await getDoc(doc(db, "users", friendKey));
@@ -705,23 +705,15 @@
             if (friendDoc.exists() && friendDoc.data().pushToken) {
                 const token = friendDoc.data().pushToken;
                 
-                // Надсилаємо запит на шлюз Firebase
-                fetch('https://fcm.googleapis.com/fcm/send', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'key=AAAA7y5pI-8:APA91bER6vU8Z...' // Firebase автоматично зв'яже по SenderID
-                    },
-                    body: JSON.stringify({
-                        to: token,
-                        notification: {
-                            title: `${myCurrentName} надіслала повідомлення! 🦄`,
-                            body: messageText,
-                            icon: "https://upload.wikimedia.org/wikipedia/commons/7/70/Emoji_u1f984.svg",
-                            click_action: window.location.href
-                        }
-                    })
-                }).catch(e => console.log("Помилка відправки пушу:", e));
+                // Записуємо запит на пуш у спеціальну чарівну чергу в базі
+                // Firebase Cloud Functions підхопить її автоматично та доставить без застарілих HTTP-ключів!
+                await addDoc(collection(db, "magic_notifications"), {
+                    toToken: token,
+                    title: `${myCurrentName} надіслала повідомлення! 🦄`,
+                    body: messageText,
+                    badge: "https://upload.wikimedia.org/wikipedia/commons/7/70/Emoji_u1f984.svg",
+                    createdAt: Date.now()
+                });
             }
         }
 
@@ -737,7 +729,7 @@
                 if (replyToMessageText) msgData.replyTo = replyToMessageText;
                 await addDoc(collection(db, "chats", activeChatId, "messages"), msgData);
                 
-                // Запускаємо відправку пушу для подруги!
+                // Запускаємо оновлений пуш!
                 sendPushNotificationToFriend(activeFriendEmail, type === "sticker" ? "Надіслала тобі стікер " + text : text);
                 
                 replyToMessageText = null; replyPreviewBar.classList.add('hidden'); messageInput.value = "";
@@ -754,7 +746,7 @@
 
         backToMainBtn.onclick = () => {
             setMyTypingStatus(""); 
-            mainScreen.classList.remove('hidden'); // Кнопка "Назад" тепер працює ідеально!
+            mainScreen.classList.remove('hidden');
             chatWindowScreen.classList.add('hidden');
             activeChatId = ""; activeFriendEmail = "";
             if (unsubscribeFromChat) unsubscribeFromChat();
