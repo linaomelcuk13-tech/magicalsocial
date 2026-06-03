@@ -355,7 +355,6 @@
         });
 
         async function requestPushPermission() {
-            // Перевіряємо, чи взагалі підтримуються сповіщення
             if (!('Notification' in window)) {
                 alert("Помилка: Цей браузер або режим взагалі не підтримує сповіщення!");
                 return;
@@ -367,19 +366,27 @@
                 alert("Діагностика: Статус дозволу від браузера = " + permission);
                 
                 if (permission === 'granted') {
-                    alert("Діагностика: Дозвіл є! Намагаюся отримати токен від Firebase...");
+                    alert("Діагностика: Дозвіл є! Реєструю Service Worker для GitHub...");
                     
-                    getToken(messaging, { vapidKey: myVapidKey, serviceWorkerRegistration: await navigator.serviceWorker.ready }).then((currentToken) => {
-                        if (currentToken) {
-                            const myKey = currentUserEmail.replace(/[@.]/g, '_');
-                            setDoc(doc(db, "users", myKey), { pushToken: currentToken }, { merge: true });
-                            alert("УРА! Токен успішно отримано і записано в базу!");
-                        } else {
-                            alert("Помилка: Firebase не повернув токен. Перевір правильність VAPID ключа!");
-                        }
-                    }).catch((err) => { 
-                        alert('Критична помилка Firebase: ' + err.message); 
-                        console.log(err);
+                    // Чітко вказуємо шлях до файлу з урахуванням назви репозиторію magicalsocial
+                    navigator.serviceWorker.register('/magicalsocial/firebase-messaging-sw.js', { scope: '/magicalsocial/' })
+                    .then((registration) => {
+                        alert("Діагностика: Service Worker успішно зареєстровано!");
+                        
+                        getToken(messaging, { vapidKey: myVapidKey, serviceWorkerRegistration: registration })
+                        .then((currentToken) => {
+                            if (currentToken) {
+                                const myKey = currentUserEmail.replace(/[@.]/g, '_');
+                                setDoc(doc(db, "users", myKey), { pushToken: currentToken }, { merge: true });
+                                alert("УРА! Токен успішно отримано і записано в базу!");
+                            } else {
+                                alert("Помилка: Firebase не повернув токен. Перевір правильність VAPID ключа!");
+                            }
+                        }).catch((err) => { 
+                            alert('Критична помилка Firebase: ' + err.message); 
+                        });
+                    }).catch((swErr) => {
+                        alert("Помилка реєстрації ServiceWorker: " + swErr.message);
                     });
                 } else {
                     alert("Попередження: Дозвіл НЕ надано. Пуші заблоковані в налаштуваннях телефону!");
