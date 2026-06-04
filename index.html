@@ -619,6 +619,22 @@
             unsubscribeFromChat = onSnapshot(q, (snapshot) => {
                 messagesContainer.innerHTML = "";
                 snapshot.forEach((mDoc) => {
+				// --- МАГІЯ АВТОМАТИЧНОГО ПУШУ КОЛИ ДОДАТОК ЗГОРНУТО ---
+        if (document.hidden && mDoc.data().sender !== currentUserEmail) {
+            if (Notification.permission === 'granted') {
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.showNotification("Нове повідомлення в Magical Social! 🦄", {
+                        body: mDoc.data().text || "Тобі надіслали стікер або медіафайл",
+                        icon: 'https://img.icons8.com/fluent/48/000000/unicorn.png',
+                        badge: 'https://img.icons8.com/fluent/48/000000/unicorn.png',
+                        vibrate: [200, 100, 200],
+                        tag: mDoc.id,
+                        renotify: true
+                    });
+                });
+            }
+        }
+        // -----------------------------------------------------
                     const data = mDoc.data(), mId = mDoc.id, isMe = data.sender === currentUserEmail;
                     const timeString = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
                     const isSticker = data.type === "sticker";
