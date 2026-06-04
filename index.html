@@ -62,7 +62,7 @@
         .online-dot.active { display: block; }
         .chat-content { flex: 1; min-width: 0; }
         .chat-title { font-size: 14px; font-weight: bold; color: #5D418A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .chat-content .chat-friend-status { font-size: 10px; color: #9A80B3; font-style: italic; }
+        .chat-friend-status { font-size: 10px; color: #9A80B3; font-style: italic; }
         .chat-message { font-size: 11px; color: #7D61AA; margin: 3px 0 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
         
         .badge { background-color: #FF6B6B; color: white; border-radius: 50%; min-width: 18px; height: 18px; padding: 2px; font-size: 10px; font-weight: bold; position: absolute; right: 15px; top: calc(50% - 11px); display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
@@ -74,14 +74,14 @@
         .avatar-option { cursor: pointer; padding: 5px; border-radius: 50%; border: 2px solid transparent; }
         .avatar-option.selected { border-color: #D8BFFF; background-color: #FFDAF0; }
 
-        /* ВІКНО ЧАТУ */
+        /* ВІКНО ЧАТУ (ЗАЛІЗОБЕТОННА ФІКСАЦІЯ) */
         .screen-chat-window { display: flex; flex-direction: column; height: 100%; background-color: #F7F0FF; position: relative; overflow: hidden; }
         
         .chat-header { 
             position: absolute; top: 0; left: 0; right: 0; width: 100%; max-width: 450px; margin: 0 auto;
             background-color: #FFDAF0; padding: 12px 15px; 
             display: flex; align-items: center; border-bottom: 2px solid #D8BFFF; 
-            box-sizing: border-box; z-index: 999;
+            box-sizing: border-box; z-index: 999; /* Найвищий пріоритет */
         }
         .back-button { background: none; border: none; font-size: 20px; color: #5D418A; cursor: pointer; margin-right: 15px; font-weight: bold; padding: 5px; }
         .chat-header-avatar { width: 38px; height: 38px; border-radius: 50%; background: white; border: 2px solid #D8BFFF; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-right: 10px; }
@@ -99,7 +99,7 @@
         .pinned-text { font-weight: bold; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex: 1; cursor: pointer; border-left: 3px solid #D8BFFF; padding-left: 8px; }
         .unpin-btn { background: none; border: none; font-size: 14px; cursor: pointer; color: #9A80B3; font-weight: bold; padding: 2px 6px; }
         
-        /* КОНТЕЙНЕР ПОВІДОМЛЕНЬ */
+        /* СТРУКТУРА КОНТЕЙНЕРА ПОВІДОМЛЕНЬ */
         .messages-container { 
             flex: 1; overflow-y: auto; 
             padding: 120px 15px 15px 15px; 
@@ -158,6 +158,7 @@
             border-top: 2px solid #D8BFFF; position: relative;
         }
 
+        /* ПРЕВ'Ю ЦИТАТИ ТА РЕДАГУВАННЯ */
         .reply-preview-bar { 
             background-color: #FFF3FA; padding: 8px 15px; border-bottom: 2px solid #D8BFFF; 
             display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #5D418A;
@@ -166,6 +167,7 @@
         .reply-preview-text { font-style: italic; border-left: 3px solid #D8BFFF; padding-left: 8px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; flex: 1; }
         .cancel-reply-btn { background: none; border: none; font-size: 14px; cursor: pointer; color: #FF6B6B; font-weight: bold; padding: 5px; }
 
+        /* ПАНЕЛЬ СТІКЕРІВ */
         .stickers-panel { display: flex; gap: 15px; background: #FFF3FA; padding: 8px 15px; border-bottom: 2px solid #D8BFFF; font-size: 24px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .sticker-btn { cursor: pointer; transition: transform 0.1s; display: inline-block; }
         .sticker-btn:hover { transform: scale(1.2); }
@@ -180,8 +182,11 @@
 <body>
 
     <div class="app-container">
+        
+        <!-- ЕКРАН ЗАВАНТАЖЕННЯ -->
         <div id="loadingScreen" class="loading-screen">Завантаження магії... 🦄</div>
         
+        <!-- РЕЄСТРАЦІЯ ТА ВХІД -->
         <div id="authScreen" class="screen-auth hidden">
             <div class="auth-logo">✨ Magical Social ✨</div>
             <div id="authSubtitle" class="auth-sub">Увійдіть або зареєструйтеся</div>
@@ -201,6 +206,7 @@
             </div>
         </div>
 
+        <!-- СПИСОК ЧАТІВ -->
         <div id="mainScreen" class="screen-main hidden">
             <div class="profile-header">
                 <div id="myAvatarDisplay" class="profile-avatar">🦄</div>
@@ -216,6 +222,7 @@
             <div id="chatsList" class="chats-list"></div>
         </div>
 
+        <!-- МОДАЛКА ПРОФІЛЮ -->
         <div id="profileModal" class="modal-overlay hidden">
             <div class="modal-content">
                 <div class="modal-title" style="font-weight: bold; margin-bottom: 15px; color: #5D418A;">Твій чарівний профіль</div>
@@ -233,7 +240,9 @@
             </div>
         </div>
 
+        <!-- ВІКНО ЧАТУ -->
         <div id="chatWindowScreen" class="screen-chat-window hidden">
+            <!-- Верхня шапка -->
             <div class="chat-header" id="chatHeaderContainer">
                 <button id="backToMainBtn" class="back-button">◀</button>
                 <div id="chatHeaderAvatar" class="chat-header-avatar">🦄</div>
@@ -243,13 +252,16 @@
                 </div>
             </div>
 
+            <!-- Верхня закріплена панель повідомлень -->
             <div id="pinnedMessageBar" class="pinned-message-bar">
                 <div id="pinnedText" class="pinned-text">📌 Закріплено: ...</div>
                 <button id="unpinBtn" class="unpin-btn">✕</button>
             </div>
 
+            <!-- Контейнер для повідомлень -->
             <div id="messagesContainer" class="messages-container"></div>
 
+            <!-- Нижня зона управління -->
             <div class="bottom-controls-wrapper">
                 <div id="replyPreviewBar" class="reply-preview-bar hidden">
                     <div id="replyPreviewText" class="reply-preview-text">Відповідь на: ...</div>
@@ -273,13 +285,14 @@
                 </div>
             </div>
         </div>
+
     </div>
 
+    <!-- ВЕБ-МОДУЛІ FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, addDoc, updateDoc, query, orderBy, onSnapshot, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCtqNAADT2KXQG2k3T1X3YRCK7peOxFhTE",
@@ -294,9 +307,16 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const messaging = getMessaging(app);
 
-        const myVapidKey = "BNqDuIF8xfynQZUA2uTA01_Q4kyEFe6rcmTfOdf2FaTsnRAovjXUSgZrsObEkCCqQ9cCPIQsR160KOc3d-bIqN0";
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                self.addEventListener('install', e => self.skipWaiting());
+                self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+                self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => new Response("Офлайн"))));
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(blob));
+        }
 
         const loadingScreen = document.getElementById('loadingScreen'), authScreen = document.getElementById('authScreen'), mainScreen = document.getElementById('mainScreen'), chatWindowScreen = document.getElementById('chatWindowScreen'), profileModal = document.getElementById('profileModal');
         const signUpBtn = document.getElementById('signUpBtn'), signInBtn = document.getElementById('signInBtn'), emailInput = document.getElementById('emailInput'), passwordInput = document.getElementById('passwordInput');
@@ -310,92 +330,10 @@
 
         let currentUserEmail = "", selectedEmoji = "🦄", activeFriendEmail = "", unsubscribeFromChat = null, unsubscribeFromPinned = null, unsubscribeFromStatus = null;
         let replyToMessageText = null, activeChatId = "";
-        let editingMessageId = null, typingTimeout = null, myCurrentName = "Новий Маг";
+        let editingMessageId = null;
+        let typingTimeout = null;
 
-        // Чарівний аудіо-синтезатор для сповіщень
-        function playMagicChime() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-                osc.frequency.setValueAtTime(880.00, ctx.currentTime + 0.1); // A5
-                gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.4);
-            } catch (e) { console.log("Аудіо заблоковано браузером"); }
-        }
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/magicalsocial/firebase-messaging-sw.js', { scope: '/magicalsocial/' })
-            .then((registration) => {
-                console.log('Чарівний Сервіс-Воркер успішно активований:', registration.scope);
-            }).catch((err) => {
-                console.log('Помилка активації Сервіс-Воркера:', err);
-            });
-        }
-
-        onAuthStateChanged(auth, async (user) => {
-            loadingScreen.classList.add('hidden');
-            if (user) {
-                currentUserEmail = user.email.toLowerCase();
-                userEmailDisplay.innerText = currentUserEmail;
-                
-                const myKey = currentUserEmail.replace(/[@.]/g, '_');
-                const userDoc = await getDoc(doc(db, "users", myKey));
-                if (userDoc.exists()) {
-                    myCurrentName = userDoc.data().name || "Маг";
-                    myNameDisplay.innerText = myCurrentName;
-                    myAvatarDisplay.innerText = userDoc.data().avatar;
-                    selectedEmoji = userDoc.data().avatar;
-                } else {
-                    await setDoc(doc(db, "users", myKey), { name: "Новий Маг", avatar: "🦄", isOnline: true, lastActive: Date.now(), isTypingIn: "" });
-                }
-                
-                setUserOnlineStatus(true);
-                startActivityTimer();
-                requestPushPermission();
-
-                authScreen.classList.add('hidden'); mainScreen.classList.remove('hidden');
-                listenToFriendsList();
-            } else {
-                authScreen.classList.remove('hidden'); mainScreen.classList.add('hidden');
-            }
-        });
-
-        async function requestPushPermission() {
-            if (!('Notification' in window)) return;
-            Notification.requestPermission().then((permission) => {
-                if (permission === 'granted') {
-                    navigator.serviceWorker.ready.then((registration) => {
-                        getToken(messaging, { vapidKey: myVapidKey, serviceWorkerRegistration: registration })
-                        .then((currentToken) => {
-                            if (currentToken) {
-                                const myKey = currentUserEmail.replace(/[@.]/g, '_');
-                                setDoc(doc(db, "users", myKey), { pushToken: currentToken }, { merge: true });
-                            }
-                        }).catch((err) => { console.error('Firebase token error:', err); });
-                    });
-                }
-            }).catch((err) => { console.error('Permission request error:', err); });
-        }
-
-        async function setUserOnlineStatus(isOnline) {
-            if (!currentUserEmail) return;
-            const myKey = currentUserEmail.replace(/[@.]/g, '_');
-            try { await setDoc(doc(db, "users", myKey), { isOnline: isOnline, lastActive: Date.now() }, { merge: true }); } catch (e) {}
-        }
-
-        function startActivityTimer() {
-            setInterval(() => { if (document.visibilityState === 'visible') setUserOnlineStatus(true); }, 30000);
-        }
-
-        document.addEventListener('visibilitychange', () => { setUserOnlineStatus(document.visibilityState === 'visible'); });
-
+        // ЗАЛІЗОБЕТОННА ПРИБИВКА ШАПКИ ДЛЯ МОБІЛОК (Зчитування Visual Viewport)
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', updateHeaderPosition);
             window.visualViewport.addEventListener('scroll', updateHeaderPosition);
@@ -408,11 +346,55 @@
             }
         }
 
+        onAuthStateChanged(auth, async (user) => {
+            loadingScreen.classList.add('hidden');
+            if (user) {
+                currentUserEmail = user.email.toLowerCase();
+                userEmailDisplay.innerText = currentUserEmail;
+                
+                const myKey = currentUserEmail.replace(/[@.]/g, '_');
+                const userDoc = await getDoc(doc(db, "users", myKey));
+                if (userDoc.exists()) {
+                    myNameDisplay.innerText = userDoc.data().name;
+                    myAvatarDisplay.innerText = userDoc.data().avatar;
+                    selectedEmoji = userDoc.data().avatar;
+                } else {
+                    await setDoc(doc(db, "users", myKey), { name: "Новий Маг", avatar: "🦄", isOnline: true, lastActive: Date.now(), isTypingIn: "" });
+                }
+                
+                setUserOnlineStatus(true);
+                startActivityTimer();
+
+                authScreen.classList.add('hidden'); mainScreen.classList.remove('hidden');
+                listenToFriendsList();
+            } else {
+                authScreen.classList.remove('hidden'); mainScreen.classList.add('hidden');
+            }
+        });
+
+        async function setUserOnlineStatus(isOnline) {
+            if (!currentUserEmail) return;
+            const myKey = currentUserEmail.replace(/[@.]/g, '_');
+            try {
+                await setDoc(doc(db, "users", myKey), { isOnline: isOnline, lastActive: Date.now() }, { merge: true });
+            } catch (e) { console.error(e); }
+        }
+
+        function startActivityTimer() {
+            setInterval(() => { if (document.visibilityState === 'visible') setUserOnlineStatus(true); }, 30000);
+        }
+
+        document.addEventListener('visibilitychange', () => { setUserOnlineStatus(document.visibilityState === 'visible'); });
+
+        // ВІДСТЕЖЕННЯ СТАТУСУ НАБОРУ ТЕКСТУ ("пише...")
         messageInput.addEventListener('input', () => {
             if (!activeChatId) return;
             setMyTypingStatus(activeChatId);
+            
             clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => { setMyTypingStatus(""); }, 2000);
+            typingTimeout = setTimeout(() => {
+                setMyTypingStatus("");
+            }, 2000);
         });
 
         async function setMyTypingStatus(chatId) {
@@ -445,7 +427,6 @@
 
         saveProfileBtn.addEventListener('click', async () => {
             const name = editNameInput.value.trim() || "Анонім";
-            myCurrentName = name;
             await setDoc(doc(db, "users", currentUserEmail.replace(/[@.]/g, '_')), { name: name, avatar: selectedEmoji }, { merge: true });
             myNameDisplay.innerText = name; myAvatarDisplay.innerText = selectedEmoji;
             profileModal.classList.add('hidden');
@@ -461,6 +442,7 @@
 
                 await setDoc(doc(db, "users", myKey, "my_friends", friendKey), { email: friendEmail });
                 await setDoc(doc(db, "users", friendKey, "my_friends", myKey), { email: currentUserEmail });
+                
                 searchInput.value = "";
             }
         });
@@ -474,279 +456,384 @@
                 
                 snapshot.forEach((friendDoc) => {
                     const fEmail = friendDoc.data().email, fKey = fEmail.replace(/[@.]/g, '_');
-                    
-                    const item = document.createElement('div');
-                    item.className = 'chat-item';
-                    item.innerHTML = `
-                        <div class="chat-avatar-container">
-                            <div class="chat-avatar" id="avatar_${fKey}">🦄</div>
-                            <div class="online-dot" id="dot_${fKey}"></div>
-                        </div>
-                        <div class="chat-content">
-                            <div class="chat-title" id="name_${fKey}">${fEmail}</div>
-                            <div class="chat-friend-status" id="typing_${fKey}"></div>
-                            <div class="chat-message" id="msg_${fKey}">Немає повідомлень</div>
-                        </div>
-                        <div class="badge hidden" id="badge_${fKey}">0</div>
-                    `;
-                    
-                    item.addEventListener('click', () => openChatWindow(fEmail));
-                    chatsList.appendChild(item);
+                    const chatId = getChatId(currentUserEmail, fEmail);
 
-                    onSnapshot(doc(db, "users", fKey), (uDoc) => {
-                        if(uDoc.exists()) {
-                            const uData = uDoc.data();
-                            document.getElementById(`name_${fKey}`).innerText = uData.name || fEmail;
-                            document.getElementById(`avatar_${fKey}`).innerText = uData.avatar || "🦄";
+                    const html = `
+                        <div class="chat-item" id="chat-${fKey}">
+                            <div class="chat-avatar-container">
+                                <div class="chat-avatar" id="avatar-${fKey}">🦄</div>
+                                <div class="online-dot" id="dot-${fKey}"></div>
+                            </div>
+                            <div class="chat-content">
+                                <div class="chat-title" id="name-${fKey}">${fEmail}</div>
+                                <div class="chat-friend-status" id="status-text-${fKey}">офлайн</div>
+                                <p class="chat-message" id="last-msg-${fKey}">Натисни, щоб увійти в чат...</p>
+                            </div>
+                            <div class="badge hidden" id="badge-${fKey}">0</div>
+                        </div>`;
+                    chatsList.insertAdjacentHTML('beforeend', html);
+
+                    onSnapshot(doc(db, "users", fKey), (docSnap) => {
+                        if(docSnap.exists()) {
+                            const data = docSnap.data();
+                            document.getElementById(`name-${fKey}`).innerText = data.name || fEmail;
+                            document.getElementById(`avatar-${fKey}`).innerText = data.avatar || "🦄";
                             
-                            const dot = document.getElementById(`dot_${fKey}`);
-                            if(uData.isOnline) dot.classList.add('active'); else dot.classList.remove('active');
+                            const dot = document.getElementById(`dot-${fKey}`);
+                            const statusText = document.getElementById(`status-text-${fKey}`);
+                            const isRecentlyActive = data.lastActive && (Date.now() - data.lastActive < 60000);
 
-                            const typingDiv = document.getElementById(`typing_${fKey}`);
-                            const cId = getChatId(currentUserEmail, fEmail);
-                            if (uData.isTypingIn === cId) {
-                                typingDiv.innerText = "Друкує магію... ✨";
-                                typingDiv.style.color = "#4CAF50";
+                            if (data.isTypingIn === chatId) {
+                                statusText.innerText = "пише..."; statusText.style.color = "#FF6B6B";
+                            } else if (data.isOnline && isRecentlyActive) {
+                                dot.classList.add('active'); statusText.innerText = "в мережі 🟢"; statusText.style.color = "#4CAF50";
                             } else {
-                                typingDiv.innerText = uData.isOnline ? "В мережі" : "Офлайн";
-                                typingDiv.style.color = "#9A80B3";
+                                dot.classList.remove('active'); statusText.innerText = "не в мережі ⚪"; statusText.style.color = "#9A80B3";
                             }
                         }
                     });
 
-                    const chatId = getChatId(currentUserEmail, fEmail);
-                    const lastMsgQuery = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp", "desc"), where("timestamp", "!=", null));
-                    
-                    let isFirstLoad = true;
-                    onSnapshot(lastMsgQuery, (mSnapshot) => {
-                        if(!mSnapshot.empty) {
-                            const lastDoc = mSnapshot.docs[0].data();
-                            let previewText = lastDoc.text || "Стікер 🦄";
-                            if(lastDoc.sender === currentUserEmail) previewText = "Ти: " + previewText;
-                            document.getElementById(`msg_${fKey}`).innerText = previewText;
+                    onSnapshot(collection(db, "chats", chatId, "messages"), (msgSnapshot) => {
+                        let unreadCount = 0;
+                        let lastMsgText = "Натисни, щоб увійти в чат...";
+                        
+                        msgSnapshot.forEach(mDoc => {
+                            const data = mDoc.data();
+                            lastMsgText = data.text;
+                            if (data.sender === fEmail && data.isRead !== true) unreadCount++;
+                        });
 
-                            // Внутрішнє фонове сповіщення для інших чатів
-                            if (!isFirstLoad && lastDoc.sender !== currentUserEmail && activeChatId !== chatId) {
-                                playMagicChime();
-                                const badge = document.getElementById(`badge_${fKey}`);
-                                if(badge) {
-                                    let count = parseInt(badge.innerText) || 0;
-                                    badge.innerText = count + 1;
-                                    badge.classList.remove('hidden');
-                                }
-                            }
+                        document.getElementById(`last-msg-${fKey}`).innerText = lastMsgText;
+
+                        const badge = document.getElementById(`badge-${fKey}`);
+                        if (unreadCount > 0 && activeChatId !== chatId) {
+                            badge.innerText = unreadCount; badge.classList.remove('hidden');
+                        } else {
+                            badge.classList.add('hidden');
                         }
-                        isFirstLoad = false;
+                    });
+
+                    document.getElementById(`chat-${fKey}`).addEventListener('click', () => {
+                        openChatWindow(fEmail, document.getElementById(`name-${fKey}`).innerText, document.getElementById(`avatar-${fKey}`).innerText);
                     });
                 });
             });
         }
 
-        async function openChatWindow(friendEmail) {
+        async function markMessagesAsRead() {
+            if (!activeChatId || !activeFriendEmail) return;
+            try {
+                const q = query(collection(db, "chats", activeChatId, "messages"), where("sender", "==", activeFriendEmail));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach(async (mDoc) => {
+                    if (mDoc.data().isRead !== true) {
+                        await updateDoc(doc(db, "chats", activeChatId, "messages", mDoc.id), { isRead: true });
+                    }
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        function openChatWindow(friendEmail, name, avatar) {
             activeFriendEmail = friendEmail;
-            activeChatId = getChatId(currentUserEmail, friendEmail);
+            activeChatId = getChatId(currentUserEmail, activeFriendEmail);
             
-            const fKey = friendEmail.replace(/[@.]/g, '_');
-            const badge = document.getElementById(`badge_${fKey}`);
-            if(badge) { badge.innerText = "0"; badge.classList.add('hidden'); }
+            chatWithTitle.innerText = name;
+            chatHeaderAvatar.innerText = avatar;
+            mainScreen.classList.add('hidden'); chatWindowScreen.classList.remove('hidden');
+            
+            setTimeout(updateHeaderPosition, 100);
 
-            mainScreen.classList.add('hidden');
-            chatWindowScreen.classList.remove('hidden');
-            messagesContainer.innerHTML = "";
+            if (unsubscribeFromChat) unsubscribeFromChat();
+            if (unsubscribeFromPinned) unsubscribeFromPinned();
+            if (unsubscribeFromStatus) unsubscribeFromStatus();
 
-            if(unsubscribeFromChat) unsubscribeFromChat();
-            if(unsubscribeFromPinned) unsubscribeFromPinned();
-            if(unsubscribeFromStatus) unsubscribeFromStatus();
+            markMessagesAsRead();
+            listenToPinnedMessage();
 
-            unsubscribeFromStatus = onSnapshot(doc(db, "users", fKey), (uDoc) => {
-                if(uDoc.exists()) {
-                    const uData = uDoc.data();
-                    chatWithTitle.innerText = uData.name || friendEmail;
-                    chatHeaderAvatar.innerText = uData.avatar || "🦄";
+            // Динамічний контроль статусу у шапці чату ("пише..." або стан активності)
+            const fKey = activeFriendEmail.replace(/[@.]/g, '_');
+            unsubscribeFromStatus = onSnapshot(doc(db, "users", fKey), (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const isRecentlyActive = data.lastActive && (Date.now() - data.lastActive < 60000);
                     
-                    if (uData.isTypingIn === activeChatId) {
-                        chatHeaderStatus.innerText = "друкує магію... ✨";
+                    if (data.isTypingIn === activeChatId) {
+                        chatHeaderStatus.innerText = "пише...";
+                        chatHeaderStatus.style.color = "#FF6B6B";
+                    } else if (data.isOnline && isRecentlyActive) {
+                        chatHeaderStatus.innerText = "в мережі 🟢";
                         chatHeaderStatus.style.color = "#4CAF50";
                     } else {
-                        chatHeaderStatus.innerText = uData.isOnline ? "в мережі" : "поза мережею";
-                        chatHeaderStatus.style.color = "#A080D0";
+                        chatHeaderStatus.innerText = "не в мережі ⚪";
+                        chatHeaderStatus.style.color = "#9A80B3";
                     }
                 }
             });
 
             const q = query(collection(db, "chats", activeChatId, "messages"), orderBy("timestamp", "asc"));
-            
             unsubscribeFromChat = onSnapshot(q, (snapshot) => {
                 messagesContainer.innerHTML = "";
                 snapshot.forEach((mDoc) => {
-                    const mId = mDoc.id;
                     const data = mDoc.data();
+                    const mId = mDoc.id;
                     const isMe = data.sender === currentUserEmail;
-
-                    const lineBlock = document.createElement('div');
-                    lineBlock.className = `msg-line-block ${isMe ? 'sent' : 'received'}`;
-
-                    let quoteHtml = "";
-                    if (data.replyTo) {
-                        quoteHtml = `<div class="quote-in-message">${data.replyTo}</div>`;
-                    }
-
-                    let msgContent = `<div class="message ${isMe ? 'sent' : 'received'}">${quoteHtml}${data.text}</div>`;
-                    if (data.type === "sticker") {
-                        msgContent = `<div class="message sticker">${data.text}</div>`;
-                    }
+                    const timeString = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
+                    const isSticker = data.type === "sticker";
+                    const isEdited = data.isEdited ? " <span style='font-style:italic; font-size:10px; color:#9A80B3;'>(ред.)</span>" : "";
+                    const quoteHtml = data.replyTo ? `<div class="quote-in-message">↩ Відповідь на: ${data.replyTo}</div>` : "";
 
                     let reactionsHtml = "";
                     if (data.reactions && Object.keys(data.reactions).length > 0) {
-                        let rText = Object.entries(data.reactions).map(([emoji, count]) => `${emoji} ${count}`).join(" ");
-                        reactionsHtml = `<div class="reactions-container">${rText}</div>`;
+                        reactionsHtml = `<div class="reactions-container">`;
+                        for (const [emoji, usersArray] of Object.entries(data.reactions)) {
+                            if (usersArray && usersArray.length > 0) reactionsHtml += `<span>${emoji} ${usersArray.length}</span>`;
+                        }
+                        reactionsHtml += `</div>`;
                     }
 
-                    let timeStr = "";
-                    if (data.timestamp) {
-                        const date = new Date(data.timestamp);
-                        timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    }
-
-                    let ticks = "";
+                    let ticksHtml = "";
                     if (isMe) {
-                        ticks = `<span class="status-ticks ${data.isRead ? 'read' : ''}">${data.isRead ? '✓✓' : '✓'}</span>`;
+                        ticksHtml = data.isRead ? `<span class="status-ticks read">✔✔</span>` : `<span class="status-ticks">✔</span>`;
                     }
 
-                    lineBlock.innerHTML = `
-                        <div class="msg-bubble-box" id="bubble_${mId}">
-                            <div class="msg-hover-actions">
-                                <button class="msg-action-btn" onclick="replyMessage('${mId}', '${(data.text || "Стікер").replace(/'/g, "\\'")}')">↩️</button>
-                                <button class="msg-action-btn" onclick="pinMessage('${mId}', '${(data.text || "Стікер").replace(/'/g, "\\'")}')">📌</button>
-                                ${isMe ? `<button class="msg-action-btn" onclick="editMessage('${mId}', '${(data.text || "").replace(/'/g, "\\'")}')">✏️</button>` : ''}
-                                ${isMe ? `<button class="msg-action-btn" onclick="deleteMessage('${mId}')">🗑️</button>` : ''}
-                                <div class="inline-reaction-picker">
-                                    <span class="inline-emoji" onclick="addReaction('${mId}', '💖')">💖</span>
-                                    <span class="inline-emoji" onclick="addReaction('${mId}', '👍')">👍</span>
-                                    <span class="inline-emoji" onclick="addReaction('${mId}', '😂')">😂</span>
-                                </div>
+                    const actionGroupHtml = `
+                        <div class="msg-hover-actions" id="actions-${mId}">
+                            <button class="msg-action-btn" data-id="${mId}" data-action="reply" title="Відповісти">↩</button>
+                            ${isMe && !isSticker ? `<button class="msg-action-btn" data-id="${mId}" data-action="edit" title="Редагувати">✏️</button>` : ''}
+                            <button class="msg-action-btn" data-id="${mId}" data-action="pin" title="Закріпити">📌</button>
+                            <button class="msg-action-btn toggle-reactions-btn" data-id="${mId}" title="Реакції">🥰</button>
+                            
+                            <div class="inline-reaction-picker hidden" id="picker-${mId}">
+                                <span class="inline-emoji" data-id="${mId}" data-emoji="❤️">❤️</span>
+                                <span class="inline-emoji" data-id="${mId}" data-emoji="✨">✨</span>
+                                <span class="inline-emoji" data-id="${mId}" data-emoji="😂">😂</span>
+                                <span class="inline-emoji" data-id="${mId}" data-emoji="😭">😭</span>
+                                <span class="inline-emoji" data-id="${mId}" data-emoji="👍">👍</span>
                             </div>
-                            ${msgContent}
-                            ${reactionsHtml}
-                            <div class="message-meta">${timeStr} ${ticks}</div>
                         </div>
                     `;
 
-                    messagesContainer.appendChild(lineBlock);
-
-                    if (!isMe && !data.isRead) {
-                        updateDoc(doc(db, "chats", activeChatId, "messages", mId), { isRead: true });
-                    }
+                    const msgHtml = `
+                        <div class="msg-line-block ${isMe ? 'sent' : 'received'}" id="wrapper-${mId}">
+                            <div class="msg-bubble-box" data-id="${mId}">
+                                ${actionGroupHtml}
+                                <div class="message ${isSticker ? 'sticker' : (isMe ? 'sent' : 'received')}">
+                                    ${quoteHtml}
+                                    <span>${data.text}</span>${isEdited}
+                                    ${reactionsHtml}
+                                </div>
+                                <div class="message-meta">
+                                    <span>${timeString}</span> ${ticksHtml}
+                                </div>
+                            </div>
+                        </div>`;
+                    
+                    messagesContainer.appendChild(new DOMParser().parseFromString(msgHtml, 'text/html').body.firstChild);
                 });
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             });
 
-            unsubscribeFromPinned = onSnapshot(doc(db, "chats", activeChatId), (cDoc) => {
-                if (cDoc.exists() && cDoc.data().pinnedText) {
-                    pinnedText.innerText = `📌 Закріплено: ${cDoc.data().pinnedText}`;
+            messagesContainer.onclick = async (e) => {
+                const btn = e.target.closest('.msg-action-btn:not(.toggle-reactions-btn)');
+                if (btn) {
+                    const mId = btn.dataset.id;
+                    const action = btn.dataset.action;
+                    if (action === 'reply') setupReply(mId);
+                    if (action === 'edit') setupEdit(mId);
+                    if (action === 'pin') pinMessage(mId);
+                    return;
+                }
+
+                const toggleBtn = e.target.closest('.toggle-reactions-btn');
+                if (toggleBtn) {
+                    const mId = toggleBtn.dataset.id;
+                    const picker = document.getElementById(`picker-${mId}`);
+                    const bar = document.getElementById(`actions-${mId}`);
+                    
+                    if (picker.classList.contains('hidden')) {
+                        document.querySelectorAll('.inline-reaction-picker').forEach(p => p.classList.add('hidden'));
+                        document.querySelectorAll('.msg-hover-actions').forEach(b => b.classList.remove('active'));
+                        
+                        picker.classList.remove('hidden');
+                        bar.classList.add('active'); 
+                    } else {
+                        picker.classList.add('hidden');
+                        bar.classList.remove('active');
+                    }
+                    return;
+                }
+
+                const emojiSpan = e.target.closest('.inline-emoji');
+                if (emojiSpan) {
+                    const mId = emojiSpan.dataset.id;
+                    const emoji = emojiSpan.dataset.emoji;
+                    await toggleReaction(mId, emoji);
+                    return;
+                }
+                
+                const bubble = e.target.closest('.message');
+                if(bubble) {
+                    const parentBox = bubble.closest('.msg-bubble-box');
+                    const mId = parentBox.dataset.id;
+                    const bar = document.getElementById(`actions-${mId}`);
+                    const isAlreadyActive = bar.classList.contains('active');
+                    
+                    document.querySelectorAll('.msg-hover-actions').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.inline-reaction-picker').forEach(p => p.classList.add('hidden'));
+                    
+                    if(!isAlreadyActive) {
+                        bar.classList.add('active');
+                    }
+                }
+            };
+        }
+
+        async function toggleReaction(messageId, emoji) {
+            const msgRef = doc(db, "chats", activeChatId, "messages", messageId);
+            const msgSnap = await getDoc(msgRef);
+            if (!msgSnap.exists()) return;
+
+            const data = msgSnap.data();
+            let reactions = data.reactions || {};
+            let usersWhoReacted = reactions[emoji] || [];
+
+            if (usersWhoReacted.includes(currentUserEmail)) {
+                usersWhoReacted = usersWhoReacted.filter(email => email !== currentUserEmail);
+            } else {
+                usersWhoReacted.push(currentUserEmail);
+            }
+
+            if (usersWhoReacted.length === 0) {
+                delete reactions[emoji];
+            } else {
+                reactions[emoji] = usersWhoReacted;
+            }
+
+            await updateDoc(msgRef, { reactions: reactions });
+        }
+
+        function listenToPinnedMessage() {
+            unsubscribeFromPinned = onSnapshot(doc(db, "chats", activeChatId), (docSnap) => {
+                if (docSnap.exists() && docSnap.data().pinnedMessage) {
+                    const pinnedData = docSnap.data().pinnedMessage;
+                    pinnedText.innerText = `📌 Закріплено: ${pinnedData.text}`;
+                    pinnedText.dataset.targetId = pinnedData.id;
                     pinnedMessageBar.classList.remove('hidden');
+                    messagesContainer.style.paddingTop = "120px";
                 } else {
                     pinnedMessageBar.classList.add('hidden');
+                    messagesContainer.style.paddingTop = "75px";
                 }
+                updateHeaderPosition();
             });
         }
 
-        async function handleSendMessage(text, type = "text") {
-            const cleanText = text.trim();
-            if (!cleanText || !activeChatId) return;
+        async function pinMessage(mId) {
+            const msgDoc = await getDoc(doc(db, "chats", activeChatId, "messages", mId));
+            if (msgDoc.exists()) {
+                await setDoc(doc(db, "chats", activeChatId), {
+                    pinnedMessage: { id: mId, text: msgDoc.data().text }
+                }, { merge: true });
+            }
+        }
 
+        unpinBtn.onclick = async () => {
+            await setDoc(doc(db, "chats", activeChatId), { pinnedMessage: null }, { merge: true });
+        };
+
+        pinnedText.onclick = () => {
+            const tId = pinnedText.dataset.targetId;
+            const targetEl = document.getElementById(`wrapper-${tId}`);
+            if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth' });
+        };
+
+        async function setupReply(mId) {
+            const msgDoc = await getDoc(doc(db, "chats", activeChatId, "messages", mId));
+            if (msgDoc.exists()) {
+                replyToMessageText = msgDoc.data().text;
+                replyPreviewText.innerText = `Відповідь на: ${replyToMessageText}`;
+                replyPreviewBar.classList.remove('hidden');
+                editingMessageId = null;
+                sendMessageBtn.innerText = "➔";
+                messageInput.focus();
+            }
+        }
+
+        async function setupEdit(mId) {
+            const msgDoc = await getDoc(doc(db, "chats", activeChatId, "messages", mId));
+            if (msgDoc.exists()) {
+                editingMessageId = mId;
+                messageInput.value = msgDoc.data().text;
+                replyPreviewText.innerText = `Редагування: ${msgDoc.data().text}`;
+                replyPreviewBar.classList.remove('hidden');
+                sendMessageBtn.innerText = "✓";
+                replyToMessageText = null;
+                messageInput.focus();
+            }
+        }
+
+        function cancelEditMode() {
+            editingMessageId = null;
+            sendMessageBtn.innerText = "➔";
+            replyPreviewBar.classList.add('hidden');
             messageInput.value = "";
-            setMyTypingStatus("");
+        }
+
+        cancelReplyBtn.onclick = () => {
+            replyToMessageText = null;
+            cancelEditMode();
+        };
+
+        async function handleSendMessage(text, type = "text") {
+            if (!text.trim()) return;
+
+            setMyTypingStatus(""); // Скидаємо статус "пише..." відразу після відправки
 
             if (editingMessageId) {
                 await updateDoc(doc(db, "chats", activeChatId, "messages", editingMessageId), {
-                    text: cleanText,
+                    text: text.trim(),
                     isEdited: true
                 });
-                editingMessageId = null;
-                sendMessageBtn.innerText = "➔";
-                return;
-            }
-
-            const msgData = {
-                text: cleanText,
-                sender: currentUserEmail,
-                senderName: myCurrentName,
-                timestamp: Date.now(),
-                type: type,
-                isRead: false
-            };
-
-            if (replyToMessageText) {
-                msgData.replyTo = replyToMessageText;
+                cancelEditMode();
+            } else {
+                const msgData = {
+                    text: text.trim(),
+                    sender: currentUserEmail,
+                    timestamp: Date.now(),
+                    type: type,
+                    isRead: false
+                };
+                if (replyToMessageText) msgData.replyTo = replyToMessageText;
+                await addDoc(collection(db, "chats", activeChatId, "messages"), msgData);
+                
                 replyToMessageText = null;
                 replyPreviewBar.classList.add('hidden');
+                messageInput.value = "";
             }
 
-            await addDoc(collection(db, "chats", activeChatId, "messages"), msgData);
+            setTimeout(() => { 
+                messageInput.focus(); 
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 50);
         }
 
         sendMessageBtn.onclick = () => handleSendMessage(messageInput.value);
         messageInput.onkeypress = (e) => { if (e.key === 'Enter') handleSendMessage(messageInput.value); };
 
-        window.replyMessage = function(mId, text) {
-            replyToMessageText = text;
-            replyPreviewText.innerText = `Відповідь на: ${text}`;
-            replyPreviewBar.classList.remove('hidden');
-            messageInput.focus();
-        };
-
-        cancelReplyBtn.onclick = () => { replyToMessageText = null; replyPreviewBar.classList.add('hidden'); };
-
-        window.pinMessage = async function(mId, text) {
-            await setDoc(doc(db, "chats", activeChatId), { pinnedText: text, pinnedId: mId }, { merge: true });
-        };
-
-        unpinBtn.onclick = async () => {
-            await setDoc(doc(db, "chats", activeChatId), { pinnedText: null, pinnedId: null }, { merge: true });
-        };
-
-        window.editMessage = function(mId, currentText) {
-            editingMessageId = mId;
-            messageInput.value = currentText;
-            sendMessageBtn.innerText = "💾";
-            messageInput.focus();
-        };
-
-        window.deleteMessage = async function(mId) {
-            if(confirm("Видалити це повідомлення?")) {
-                await updateDoc(doc(db, "chats", activeChatId, "messages", mId), {
-                    text: "🗑️ Повідомлення видалено",
-                    type: "text",
-                    sticker: null
-                });
-            }
-        };
-
-        window.addReaction = async function(mId, emoji) {
-            const mRef = doc(db, "chats", activeChatId, "messages", mId);
-            const mDoc = await getDoc(mRef);
-            if (!mDoc.exists()) return;
-            
-            let reactions = mDoc.data().reactions || {};
-            reactions[emoji] = (reactions[emoji] || 0) + 1;
-            await updateDoc(mRef, { reactions: reactions });
-        };
-
         document.querySelectorAll('.sticker-btn').forEach(btn => {
-            btn.onclick = (e) => {
-                const sticker = e.target.getAttribute('data-sticker');
+            btn.onclick = () => {
+                const sticker = btn.dataset.sticker;
                 handleSendMessage(sticker, "sticker");
             };
         });
 
         backToMainBtn.onclick = () => {
-            activeChatId = "";
-            activeFriendEmail = "";
-            chatWindowScreen.classList.add('hidden');
-            mainScreen.classList.remove('hidden');
-            if(unsubscribeFromChat) unsubscribeFromChat();
-            if(unsubscribeFromStatus) unsubscribeFromStatus();
+            setMyTypingStatus("");
+            mainScreen.classList.remove('hidden'); chatWindowScreen.classList.add('hidden');
+            activeChatId = ""; activeFriendEmail = "";
+            if (unsubscribeFromChat) unsubscribeFromChat();
+            if (unsubscribeFromPinned) unsubscribeFromPinned();
+            if (unsubscribeFromStatus) unsubscribeFromStatus();
         };
     </script>
 </body>
