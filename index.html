@@ -620,7 +620,7 @@
                 messagesContainer.innerHTML = "";
                 snapshot.forEach((mDoc) => {
 				// --- МАГІЯ АВТОМАТИЧНОГО ПУШУ КОЛИ ДОДАТОК ЗГОРНУТО ---
-        if (document.hidden && mDoc.data().sender !== currentUserEmail) {
+        if (mDoc.data().sender !== currentUserEmail) {
             if (Notification.permission === 'granted') {
                 navigator.serviceWorker.ready.then((registration) => {
                     registration.showNotification("Нове повідомлення в Magical Social! 🦄", {
