@@ -397,14 +397,31 @@
         }
 
         // ПРИЙОМ СПОВІЩЕНЬ, КОЛИ ДОДАТОК ВІДКРИТИЙ (ЩОБ НЕ БЛОКУВАЛИСЬ)
+        // ПРИЙОМ СПОВІЩЕНЬ ТА СТВОРЕННЯ ЛОКАЛЬНИХ ПУШІВ
         onMessage(messaging, (payload) => {
-            console.log('Отримано пуш у відкритому додатку: ', payload);
-            if (activeChatId === "") {
-                // Показуємо банер, якщо користувач сидить на головному екрані списку чатів
-                new Notification(payload.notification.title, {
-                    body: payload.notification.body,
-                    icon: "data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%270.9em%27 font-size=%2790%27>🦄</text></svg>"
-                });
+            console.log('Отримано пуш: ', payload);
+            
+            // Беремо текст із прийдешнього повідомлення
+            const title = payload.notification?.title || "Нове повідомлення! 🦄";
+            const body = payload.notification?.body || "Тобі хтось написав у Magical Social";
+            
+            // Перевіряємо: якщо користувач зараз НЕ в цьому чаті, або додаток згорнуто
+            if (activeChatId === "" || document.hidden) {
+                
+                // Перевіряємо, чи є дозвіл на пуші в браузері
+                if (Notification.permission === 'granted') {
+                    // Магія! Змушуємо Service Worker вивести пуш на екран телефона
+                    navigator.serviceWorker.ready.then((registration) => {
+                        registration.showNotification(title, {
+                            body: body,
+                            icon: 'https://img.icons8.com/fluent/48/000000/unicorn.png', // Твоя іконка єдинорога
+                            badge: 'https://img.icons8.com/fluent/48/000000/unicorn.png',
+                            vibrate: [200, 100, 200], // Телефон завібрує
+                            tag: 'new-message',
+                            renotify: true
+                        });
+                    });
+                }
             }
         });
 
