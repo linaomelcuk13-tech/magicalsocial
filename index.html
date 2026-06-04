@@ -355,45 +355,22 @@
         });
 
         async function requestPushPermission() {
-            if (!('Notification' in window)) {
-                alert("Помилка: Цей браузер або режим взагалі не підтримує сповіщення!");
-                return;
-            }
+            if (!('Notification' in window)) return;
 
-            alert("Діагностика: Запускаю запит дозволу...");
-            
             Notification.requestPermission().then((permission) => {
-                alert("Діагностика: Статус дозволу від браузера = " + permission);
-                
                 if (permission === 'granted') {
-                    alert("Діагностика: Дозвіл є! Реєструю Service Worker для GitHub...");
-                    
-                    // Чітко вказуємо шлях до файлу з урахуванням назви репозиторію magicalsocial
                     navigator.serviceWorker.register('/magicalsocial/firebase-messaging-sw.js', { scope: '/magicalsocial/' })
                     .then((registration) => {
-                        alert("Діагностика: Service Worker успішно зареєстровано!");
-                        
                         getToken(messaging, { vapidKey: myVapidKey, serviceWorkerRegistration: registration })
                         .then((currentToken) => {
                             if (currentToken) {
                                 const myKey = currentUserEmail.replace(/[@.]/g, '_');
                                 setDoc(doc(db, "users", myKey), { pushToken: currentToken }, { merge: true });
-                                alert("УРА! Токен успішно отримано і записано в базу!");
-                            } else {
-                                alert("Помилка: Firebase не повернув токен. Перевір правильність VAPID ключа!");
                             }
-                        }).catch((err) => { 
-                            alert('Критична помилка Firebase: ' + err.message); 
-                        });
-                    }).catch((swErr) => {
-                        alert("Помилка реєстрації ServiceWorker: " + swErr.message);
-                    });
-                } else {
-                    alert("Попередження: Дозвіл НЕ надано. Пуші заблоковані в налаштуваннях телефону!");
+                        }).catch((err) => { console.error('Firebase token error:', err); });
+                    }).catch((swErr) => { console.error('SW registration error:', swErr); });
                 }
-            }).catch((err) => {
-                alert("Помилка запиту дозволу: " + err.message);
-            });
+            }).catch((err) => { console.error('Permission request error:', err); });
         }
 
         // ПРИЙОМ СПОВІЩЕНЬ, КОЛИ ДОДАТОК ВІДКРИТИЙ (ЩОБ НЕ БЛОКУВАЛИСЬ)
