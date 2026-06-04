@@ -355,59 +355,48 @@
         });
 
         async function requestPushPermission() {
-            if (!('Notification' in window)) return;
+            if (!('Notification' in window)) {
+                alert("Помилка: Цей браузер або режим взагалі не підтримує сповіщення!");
+                return;
+            }
 
+            alert("Діагностика: Запускаю запит дозволу...");
+            
             Notification.requestPermission().then((permission) => {
+                alert("Діагностика: Статус дозволу від браузера = " + permission);
+                
                 if (permission === 'granted') {
+                    alert("Діагностика: Дозвіл є! Реєструю Service Worker для GitHub...");
+                    
+                    // Чітко вказуємо шлях до файлу з урахуванням назви репозиторію magicalsocial
                     navigator.serviceWorker.register('/magicalsocial/firebase-messaging-sw.js', { scope: '/magicalsocial/' })
                     .then((registration) => {
+                        alert("Діагностика: Service Worker успішно зареєстровано!");
+                        
                         getToken(messaging, { vapidKey: myVapidKey, serviceWorkerRegistration: registration })
                         .then((currentToken) => {
                             if (currentToken) {
                                 const myKey = currentUserEmail.replace(/[@.]/g, '_');
                                 setDoc(doc(db, "users", myKey), { pushToken: currentToken }, { merge: true });
+                                alert("УРА! Токен успішно отримано і записано в базу!");
+                            } else {
+                                alert("Помилка: Firebase не повернув токен. Перевір правильність VAPID ключа!");
                             }
-                        }).catch((err) => { console.error('Firebase token error:', err); });
-                    }).catch((swErr) => { console.error('SW registration error:', swErr); });
+                        }).catch((err) => { 
+                            alert('Критична помилка Firebase: ' + err.message); 
+                        });
+                    }).catch((swErr) => {
+                        alert("Помилка реєстрації ServiceWorker: " + swErr.message);
+                    });
+                } else {
+                    alert("Попередження: Дозвіл НЕ надано. Пуші заблоковані в налаштуваннях телефону!");
                 }
-            }).catch((err) => { console.error('Permission request error:', err); });
+            }).catch((err) => {
+                alert("Помилка запиту дозволу: " + err.message);
+            });
         }
 
         // ПРИЙОМ СПОВІЩЕНЬ, КОЛИ ДОДАТОК ВІДКРИТИЙ (ЩОБ НЕ БЛОКУВАЛИСЬ)
-		// ФУНКЦІЯ ДЛЯ АВТОМАТИЧНОЇ ВІДПРАВКИ ПУШУ ПОДРУЗІ
-        async function sendLivePushNotification(recipientEmail, messageText) {
-            try {
-                // 1. Шукаємо в базі токен того, кому пишемо
-                const recipientKey = recipientEmail.replace(/[@.]/g, '_');
-                const recipientDoc = await getDoc(doc(db, "users", recipientKey));
-                
-                if (!recipientDoc.exists()) return;
-                const token = recipientDoc.data().pushToken;
-                if (!token) return;
-
-                // 2. Відправляємо прихований запит на сервери Google FCM
-                // Використовуємо безкоштовний публічний шлюз для клієнтських додатків
-                await fetch('https://fcm.googleapis.com/fcm/send', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // Сюди Firebase автоматично підставить авторизацію з твого конфігу
-                    },
-                    body: JSON.stringify({
-                        to: token,
-                        notification: {
-                            title: `Нове повідомлення від ${currentUserName || 'Мага'} 🦄`,
-                            body: messageText,
-                            icon: 'https://img.icons8.com/fluent/48/000000/unicorn.png',
-                            click_action: 'https://linaomelcuk13-tech.github.io/magicalsocial/'
-                        }
-                    })
-                });
-                console.log("Сигнал на пуш успішно надіслано через Google!");
-            } catch (err) {
-                console.error("Не вдалося відправити пуш через мережу:", err);
-            }
-        }
         // ПРИЙОМ СПОВІЩЕНЬ ТА СТВОРЕННЯ ЛОКАЛЬНИХ ПУШІВ
         onMessage(messaging, (payload) => {
             console.log('Отримано пуш: ', payload);
@@ -631,7 +620,7 @@
                 messagesContainer.innerHTML = "";
                 snapshot.forEach((mDoc) => {
 				// --- МАГІЯ АВТОМАТИЧНОГО ПУШУ КОЛИ ДОДАТОК ЗГОРНУТО ---
-        if (mDoc.data().sender !== currentUserEmail) {
+        if (document.hidden && mDoc.data().sender !== currentUserEmail) {
             if (Notification.permission === 'granted') {
                 navigator.serviceWorker.ready.then((registration) => {
                     registration.showNotification("Нове повідомлення в Magical Social! 🦄", {
@@ -820,10 +809,7 @@
                 if (replyToMessageText) msgData.replyTo = replyToMessageText;
                 await addDoc(collection(db, "chats", activeChatId, "messages"), msgData);
                 
-                await addDoc(collection(db, "chats", activeChatId, "messages"), msgData);
-
-        // НАШ НОВИЙ ЖИВИЙ ПУШ ДЛЯ СЕРВЕРІВ GOOGLE
-        sendLivePushNotification(activeFriendEmail, type === "sticker" ? "Надіслала тобі стікер 🦄" : text);
+                sendPushNotificationToFriend(activeFriendEmail, type === "sticker" ? "Надіслала тобі стікер " + text : text);
                 
                 replyToMessageText = null; replyPreviewBar.classList.add('hidden'); messageInput.value = "";
             }
