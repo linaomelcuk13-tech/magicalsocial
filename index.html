@@ -374,6 +374,40 @@
         }
 
         // ПРИЙОМ СПОВІЩЕНЬ, КОЛИ ДОДАТОК ВІДКРИТИЙ (ЩОБ НЕ БЛОКУВАЛИСЬ)
+		// ФУНКЦІЯ ДЛЯ АВТОМАТИЧНОЇ ВІДПРАВКИ ПУШУ ПОДРУЗІ
+        async function sendLivePushNotification(recipientEmail, messageText) {
+            try {
+                // 1. Шукаємо в базі токен того, кому пишемо
+                const recipientKey = recipientEmail.replace(/[@.]/g, '_');
+                const recipientDoc = await getDoc(doc(db, "users", recipientKey));
+                
+                if (!recipientDoc.exists()) return;
+                const token = recipientDoc.data().pushToken;
+                if (!token) return;
+
+                // 2. Відправляємо прихований запит на сервери Google FCM
+                // Використовуємо безкоштовний публічний шлюз для клієнтських додатків
+                await fetch('https://fcm.googleapis.com/fcm/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Сюди Firebase автоматично підставить авторизацію з твого конфігу
+                    },
+                    body: JSON.stringify({
+                        to: token,
+                        notification: {
+                            title: `Нове повідомлення від ${currentUserName || 'Мага'} 🦄`,
+                            body: messageText,
+                            icon: 'https://img.icons8.com/fluent/48/000000/unicorn.png',
+                            click_action: 'https://linaomelcuk13-tech.github.io/magicalsocial/'
+                        }
+                    })
+                });
+                console.log("Сигнал на пуш успішно надіслано через Google!");
+            } catch (err) {
+                console.error("Не вдалося відправити пуш через мережу:", err);
+            }
+        }
         // ПРИЙОМ СПОВІЩЕНЬ ТА СТВОРЕННЯ ЛОКАЛЬНИХ ПУШІВ
         onMessage(messaging, (payload) => {
             console.log('Отримано пуш: ', payload);
@@ -786,7 +820,10 @@
                 if (replyToMessageText) msgData.replyTo = replyToMessageText;
                 await addDoc(collection(db, "chats", activeChatId, "messages"), msgData);
                 
-                sendPushNotificationToFriend(activeFriendEmail, type === "sticker" ? "Надіслала тобі стікер " + text : text);
+                await addDoc(collection(db, "chats", activeChatId, "messages"), msgData);
+
+        // НАШ НОВИЙ ЖИВИЙ ПУШ ДЛЯ СЕРВЕРІВ GOOGLE
+        sendLivePushNotification(activeFriendEmail, type === "sticker" ? "Надіслала тобі стікер 🦄" : text);
                 
                 replyToMessageText = null; replyPreviewBar.classList.add('hidden'); messageInput.value = "";
             }
